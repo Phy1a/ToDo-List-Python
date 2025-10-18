@@ -1,3 +1,5 @@
+import csv
+
 # Using open() function
 file_path = "ToDoList.csv";
 
@@ -12,15 +14,23 @@ while (1):
         break
 
 
-with open(file_path, mode) as file:
+with open(file_path, mode) as file:    
+    line_count = 0
     # Write content to the file
     if(mode == 'a'):
         text = input("Enter task : ")
         file.write(text)
         file.write("\n")
     else:
-        for line in file:
-            print(line, end="")  # end="" évite les doubles sauts de ligne
+        csv_reader = csv.reader(file, delimiter=',')
+        for line in csv_reader:
+            if line_count == 0:
+                print(f'Column names are {", ".join(line)}')
+                line_count += 1
+            else:
+                print(f'{line[0]} |{line[1]} |{line[2]} |{line[3]} |{line[4]} |{line[5]} |{line[6]}')
+                line_count += 1
+            # print(line, end="")  # end="" évite les doubles sauts de ligne
 
 
 file.close()
