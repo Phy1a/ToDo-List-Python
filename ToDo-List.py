@@ -1,6 +1,8 @@
 #import csv
 import json
 import os
+from datetime import date
+from datetime import datetime
 
 class TodoList:
     def __init__(self, file_path: str = "ToDoList.json"):
@@ -27,15 +29,15 @@ class TodoList:
         with open(self.file_path, "w", encoding="utf-8") as f:
             json.dump(data, f, ensure_ascii=False, indent=4)    # false for emojis (maybe), 4 space for indentation
 
-    def add_task(self, *, text: str, theme: str = "default", date: str = "",
-                 deadline: str = "", time: int = 0, priority: int = 0,
+    def add_task(self, *, text: str, theme: str = "default", date= date.today(),
+                 deadline= date.today(), time: int = 0, priority: int = 0,
                  color: str = "normal", done: bool = False):
         task = {
             "done": done,
             "theme": theme,
             "text": text,
-            "date": date,
-            "deadline": deadline,
+            "date": date.strftime("%d-%m-%Y"),
+            "deadline": deadline.strftime("%d-%m-%Y"),
             "time": time,
             "priority": priority,
             "color": color,
@@ -48,11 +50,25 @@ class TodoList:
 
 
 #useless ?
-def to_int(val, default=0):
-    try:
-        return int(val)
-    except (TypeError, ValueError):
-        return default
+def check_priority(val, default=0):
+    while True:
+        if 0 <= int(val) <= 5:
+            try:
+                return int(val)
+            except (TypeError, ValueError):
+                print("ce n'est pas une priorité valide")
+                continue
+
+def check_time(val, default=0):
+    pass
+
+    while True:
+        if 0 <= default <= 8:
+            try:
+                return int(val)
+            except (TypeError, ValueError):
+                print("ce n'est pas une priorité valide")
+                continue
 
 def securedInputInt(message="Please enter un number : ", min=None, max=None):
     validity = False
@@ -68,9 +84,31 @@ def securedInputInt(message="Please enter un number : ", min=None, max=None):
                 validity = False
         except:
             print("Please enter a number.")
-            validity = False
-    
+            validity = False    
     return result
+
+def voidstr(message):
+    str = input(message)
+    while True:
+        if str=="":
+            print("Veuillez rentrer une tache")
+            str = input(message)
+        else:
+            return str
+
+def checkdate(message):
+    while True:
+        date_str = input(message)
+        try:
+            if datetime.strptime(date_str, "%d-%m-%Y") < datetime.today():
+                print("La date est antérieure à aujourd'hui")
+                continue
+            date_obj = datetime.strptime(date_str, "%d-%m-%Y").date()
+            return date_obj
+        except ValueError:
+            print("Date non valide (jj-mm-yyyy)")
+
+# todo: change all datetime objects to date objects
 
 def main():
     todo = TodoList("ToDoList.json")
@@ -83,11 +121,13 @@ def main():
 
     if mode == "a":
         print("Ajout d'une tache")
-        text = input("Texte de la tache : ").strip()
+        text = voidstr("Texte de la tache : ").strip()      # input("Texte de la tache : ").strip()
         theme = (input("theme (default, school...) : ").strip() or "default")
-        date = input("Date d'ajout : ").strip()
-        deadline = input("Deadline : ").strip()
-        priority_val = to_int(input("Priorité : ").strip(), default=0)
+        #today = date.today().strftime("%d-%m-%Y")   # DD-MM-YYYY          #input("Date d'ajout : ").strip()
+        #deadlinetmp = input("Deadline : ").strip()
+        deadline = checkdate("Deadline : ")      #datetime.strptime(deadlinetmp, "%d-%m-%Y")
+        # time_val = check_time(input("Temps estimé : ").strip(), default=0)
+        priority_val = securedInputInt("Priorité : ", 0, 5)
         color = (input("Couleur : ").strip() or "normal")
         done_in = input("fait ? (o/n) : ").strip().lower()
         done = done_in == "o"
@@ -95,9 +135,9 @@ def main():
         todo.add_task(
             text=text,
             theme=theme,
-            date=date,
-            deadline=deadline,
-            time=time_val,
+            #date=today, # datenow()
+            deadline=deadline, # date
+            #time=time_val,
             priority=priority_val,
             color=color, # RGB WIP
             done=done,
@@ -109,10 +149,10 @@ def main():
         if not tasks:
             print("pas de tache")
         else:
-            print("done | theme | text | date | deadline | time | priority | color")
+            print("done | theme | text | date | deadline | priority | color")
             for t in tasks:
                 print(f'{t.get("done", False)} | {t.get("theme","")} | {t.get("text","")} | '
-                      f'{t.get("date","")} | {t.get("deadline","")} | {t.get("time","")} | '
+                      f'{t.get("date","")} | {t.get("deadline","")} | '
                       f'{t.get("priority","")} | {t.get("color","")}')
 
 
