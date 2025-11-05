@@ -19,6 +19,16 @@
             "time": 5,
             "priority": 1,
             "color": "blue"
+        },
+        {
+            "done": false,
+            "theme": "famille",
+            "text": "Faire bisous à Maman",
+            "date": "05-11-2025",
+            "deadline": "hjdgvhhf",
+            "time": 5,
+            "priority": 10,
+            "color": "rouge"
         }
     ]
 }

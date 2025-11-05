@@ -54,6 +54,23 @@ def to_int(val, default=0):
     except (TypeError, ValueError):
         return default
 
+def securedInputInt(message="Please enter un number : ", min=None, max=None):
+    validity = False
+    while (validity == False):
+        validity = True
+        try:
+            result = int(input(message))
+            if (min != None and result < min):
+                print("The minimum accepted value is ", min)
+                validity = False
+            if (max != None and result > max):
+                print("The maximum accepted value is ", max)
+                validity = False
+        except:
+            print("Please enter a number.")
+            validity = False
+    
+    return result
 
 def main():
     todo = TodoList("ToDoList.json")
@@ -70,7 +87,6 @@ def main():
         theme = (input("theme (default, school...) : ").strip() or "default")
         date = input("Date d'ajout : ").strip()
         deadline = input("Deadline : ").strip()
-        time_val = to_int(input("Temps estimé : ").strip(), default=0)
         priority_val = to_int(input("Priorité : ").strip(), default=0)
         color = (input("Couleur : ").strip() or "normal")
         done_in = input("fait ? (o/n) : ").strip().lower()
@@ -102,6 +118,7 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
 
 # else:
