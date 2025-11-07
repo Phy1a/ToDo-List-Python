@@ -16,7 +16,7 @@
             "date": "18-10-2025",
             "deadline": "23-10-2025",
             "priority": 1,
-            "color": "blue"
+            "color": "cyan"
         },
         {
             "done": false,
@@ -25,7 +25,7 @@
             "date": "05-11-2025",
             "deadline": "hjdgvhhf",
             "priority": 10,
-            "color": "rouge"
+            "color": "red"
         },
         {
             "done": false,
@@ -35,7 +35,7 @@
             "deadline": "12-12-3300",
             "time": 0,
             "priority": "",
-            "color": "normal"
+            "color": "yellow"
         },
         {
             "done": true,
@@ -45,7 +45,7 @@
             "deadline": "12-12-2025",
             "time": 0,
             "priority": 3,
-            "color": "bleu"
+            "color": "blue"
         },
         {
             "done": false,
@@ -55,7 +55,17 @@
             "deadline": "12-12-2025",
             "time": 0,
             "priority": 3,
-            "color": "dffsdf"
+            "color": "magenta"
+        },
+        {
+            "done": false,
+            "theme": "default",
+            "text": "qsd",
+            "date": "07-11-2025",
+            "deadline": "12-12-2028",
+            "time": 0,
+            "priority": 2,
+            "color": "qds"
         }
     ]
 }

@@ -4,6 +4,17 @@ import os
 from datetime import date
 from datetime import datetime
 
+from colorama import Fore, Style, init
+init(autoreset=True)
+colors = {
+    "red": Fore.RED,
+    "green": Fore.GREEN,
+    "blue": Fore.BLUE,
+    "yellow": Fore.YELLOW,
+    "cyan": Fore.CYAN,
+    "magenta": Fore.MAGENTA
+}
+
 class TodoList:
     def __init__(self, file_path: str = "ToDoList.json"):
         self.file_path = file_path
@@ -72,6 +83,7 @@ def check_time(val, default=0):
 
 def securedInputInt(message="Please enter un number : ", min=None, max=None):
     validity = False
+    result = 0
     while (validity == False):
         validity = True
         try:
@@ -105,6 +117,8 @@ def voidstr(message):
 def checkdate(message):
     while True:
         date_str = input(message)
+        if date_str == "":
+            break
         try:
             if datetime.strptime(date_str, "%d-%m-%Y") < datetime.today():
                 print("La date est antérieure à aujourd'hui")
@@ -114,7 +128,7 @@ def checkdate(message):
         except ValueError:
             print("Date non valide (jj-mm-yyyy)")
 
-# todo: change all datetime objects to date objects
+
 
 def main():
     todo = TodoList("ToDoList.json")
@@ -135,9 +149,15 @@ def main():
         # time_val = check_time(input("Temps estimé : ").strip(), default=0)
         priority_val = securedInputInt("Priorité : ", 0, 5)
         color = (input("Couleur : ").strip() or "normal")
+        if color.lower() not in colors and color.lower() != "normal":
+            print(f"Couleur '{color}' non reconnue, utilisation de 'normal'.")
+            color = "normal"
         done_in = input("fait ? (o/n) : ").strip().lower()
         done = done_in == "o"
 
+        if deadline==None:
+            deadline=""
+        
         todo.add_task(
             text=text,
             theme=theme,
@@ -157,9 +177,11 @@ def main():
         else:
             print("done | theme | text | date | deadline | priority | color")
             for t in tasks:
-                print(f'{t.get("done", False)} | {t.get("theme","")} | {t.get("text","")} | '
-                      f'{t.get("date","")} | {t.get("deadline","")} | '
-                      f'{t.get("priority","")} | {t.get("color","")}')
+                color_name = t.get("color", "").lower()
+                color_code = colors.get(color_name, "")
+                print(color_code + f'Réalisé : {t.get("done", False)}\nThème : {t.get("theme","")}\nTâche : {t.get("text","")}\n'
+                      f'Tâche créé le {t.get("date","")}\nPour le : {t.get("deadline","")}\n'
+                      f'Niveau de priorité/5 : {t.get("priority","")}\nCouleur : {t.get("color","")}\n' + Style.RESET_ALL + "\n")
 
 
 if __name__ == "__main__":
