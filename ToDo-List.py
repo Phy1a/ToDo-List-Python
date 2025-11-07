@@ -75,7 +75,13 @@ def securedInputInt(message="Please enter un number : ", min=None, max=None):
     while (validity == False):
         validity = True
         try:
-            result = int(input(message))
+            result_str = (input(message))
+
+            # Empty priority
+            if (result_str == ""):
+                return ""
+            
+            result = int(result_str)
             if (min != None and result < min):
                 print("The minimum accepted value is ", min)
                 validity = False

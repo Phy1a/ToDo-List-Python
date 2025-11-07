@@ -26,6 +26,36 @@
             "deadline": "hjdgvhhf",
             "priority": 10,
             "color": "rouge"
+        },
+        {
+            "done": false,
+            "theme": "default",
+            "text": "sdgsdgdsg",
+            "date": "07-11-2025",
+            "deadline": "12-12-3300",
+            "time": 0,
+            "priority": "",
+            "color": "normal"
+        },
+        {
+            "done": true,
+            "theme": "test",
+            "text": "Test 1",
+            "date": "07-11-2025",
+            "deadline": "12-12-2025",
+            "time": 0,
+            "priority": 3,
+            "color": "bleu"
+        },
+        {
+            "done": false,
+            "theme": "test",
+            "text": "Test 2",
+            "date": "07-11-2025",
+            "deadline": "12-12-2025",
+            "time": 0,
+            "priority": 3,
+            "color": "dffsdf"
         }
     ]
 }
