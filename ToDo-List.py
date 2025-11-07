@@ -28,14 +28,19 @@ class TodoList:
         try:
             with open(self.file_path, "r", encoding="utf-8") as f:      # can create many todoLists as we want
                 data = json.load(f)     # dict
-                #print(data)    # data = dict = {tasks: [{task1}, {task2}]}
-                self.tasks = data.get("tasks", []) if isinstance(data, dict) else [] # if dict, get the value (the tasks with metadata) of "tasks" key 
-                #print(self.tasks)              # self.tasks = lst = [{task1}, {task2}]
+
+            # data = dict = {tasks: [{task1}, {task2}]}
+            self.tasks = data.get("tasks", []) if isinstance(data, dict) else [] # if dict, get the value (the tasks with metadata) of "tasks" key 
+            # self.tasks = lst = [{task1}, {task2}]
+
         except (json.JSONDecodeError, OSError):         # decode or read error
             self.tasks = []
 
+
+    
     def _save(self):
         """Save and close the todoList"""
+
         data = {"tasks": self.tasks}
         with open(self.file_path, "w", encoding="utf-8") as f:
             json.dump(data, f, ensure_ascii=False, indent=4)    # false for emojis (maybe), 4 space for indentation
@@ -43,18 +48,25 @@ class TodoList:
     def add_task(self, *, text: str, theme: str = "default", date= date.today(),
                  deadline= date.today(), time: int = 0, priority: int = 0,
                  color: str = "normal", done: bool = False):
+        if deadline != "":
+            deadline = deadline.strftime("%d-%m-%Y")
         task = {
+            "id" : len(self.tasks)+ 1, # unique id at a given time
             "done": done,
             "theme": theme,
             "text": text,
             "date": date.strftime("%d-%m-%Y"),
-            "deadline": deadline.strftime("%d-%m-%Y"),
+            "deadline": deadline,
             "time": time,
             "priority": priority,
             "color": color,
         }
         self.tasks.append(task)
         self._save()
+
+        # Printing
+        print("Task successfully added to the JSON file as:\n")
+        printTask(task)
 
     def list_tasks(self):
         return list(self.tasks)
@@ -82,6 +94,12 @@ def check_time(val, default=0):
                 continue
 
 def securedInputInt(message="Please enter un number : ", min=None, max=None):
+    ''' This function returns the user selected integer and assure its validity
+    Parameters : 
+    char * message [In], the message to print to the user, has a default value
+    int min [In], the minimum accepted value, optional
+    int max [In], the maximum accepted value, optional
+    Return : int result, the number selected by the user'''
     validity = False
     result = 0
     while (validity == False):
@@ -128,60 +146,78 @@ def checkdate(message):
         except ValueError:
             print("Date non valide (jj-mm-yyyy)")
 
+def getMode():
+    ''' This function returns the user selected mode and assure its validity
+    Parameters : None
+    Return : char mode, the mode selected by the user'''
+    while True:
+        # mode = input("Pour ouvrir la liste : \nEn mode lecture, tapez L \nEn mode ajout : tapez A\n").lower()
+        print("------------------------")
+        mode = input("Pour ouvrir la liste : \nEn mode lecture, tapez L \nEn mode ajout : tapez A\nEn mode suppression: tapez S\nPour quitter: tapez Q\n>>> ").strip().lower()
+        print("------------------------\n")
+        if mode in ("a", "l", "s", 'q'):
+            return mode
 
+def printTask(task):
+    color_name = task.get("color", "").lower()
+    color_code = colors.get(color_name, "")
+    print(color_code + f'Id : {task.get("id","Error")}\nRéalisé : {task.get("done", False)}\nThème : {task.get("theme","")}\nTâche : {task.get("text","")}\n'
+        f'Tâche créé le {task.get("date","")}\nPour le : {task.get("deadline","")}\n'
+        f'Niveau de priorité/5 : {task.get("priority","")}\nCouleur : {task.get("color","")}\n' + Style.RESET_ALL + "\n")
 
 def main():
     todo = TodoList("ToDoList.json")
 
     while True:
-        # mode = input("Pour ouvrir la liste : \nEn mode lecture, tapez L \nEn mode ajout : tapez A\n").lower()
-        mode = input("Pour ouvrir la liste : \nEn mode lecture, tapez L \nEn mode ajout : tapez A\n").strip().lower()
-        if mode in ("a", "l"):
+        mode = getMode()
+        print("")
+        if mode == "a":
+            print("Ajout d'une tache")
+            text = voidstr("Texte de la tache : ").strip()      # input("Texte de la tache : ").strip()
+            theme = (input("theme (default, school...) : ").strip() or "default")
+            #today = date.today().strftime("%d-%m-%Y")   # DD-MM-YYYY          #input("Date d'ajout : ").strip()
+            #deadlinetmp = input("Deadline : ").strip()
+            deadline = checkdate("Deadline : ")      #datetime.strptime(deadlinetmp, "%d-%m-%Y")
+            # time_val = check_time(input("Temps estimé : ").strip(), default=0)
+            priority_val = securedInputInt("Priorité : ", 0, 5)
+            color = (input("Couleur : ").strip() or "normal")
+            if color.lower() not in colors and color.lower() != "normal":
+                print(f"Couleur '{color}' non reconnue, utilisation de 'normal'.")
+                color = "normal"
+            done_in = input("fait ? (o/n) : ").strip().lower()
+            done = done_in == "o"
+
+            if deadline==None:
+                deadline=""
+            
+            todo.add_task(
+                text=text,
+                theme=theme,
+                #date=today, # datenow()
+                deadline=deadline, # date
+                #time=time_val,
+                priority=priority_val,
+                color=color, # RGB WIP
+                done=done,
+            )
+            print("tache ajoutée au json")
+        elif mode == 'l': #L
+            # work in progress
+            tasks = todo.list_tasks() #=lst
+            if not tasks:
+                print("pas de tache")
+            else:
+                #print("id | done | theme | text | date | deadline | priority | color")
+                for t in tasks:
+                    color_name = t.get("color", "").lower()
+                    color_code = colors.get(color_name, "")
+                    print(color_code + f'Id : {t.get("id","Error")}\nRéalisé : {t.get("done", False)}\nThème : {t.get("theme","")}\nTâche : {t.get("text","")}\n'
+                        f'Tâche créé le {t.get("date","")}\nPour le : {t.get("deadline","")}\n'
+                        f'Niveau de priorité/5 : {t.get("priority","")}\nCouleur : {t.get("color","")}\n' + Style.RESET_ALL + "\n")
+        elif mode == 's': # mode == s
+            print("something")
+        else : # mode == q, to quit
             break
-
-    if mode == "a":
-        print("Ajout d'une tache")
-        text = voidstr("Texte de la tache : ").strip()      # input("Texte de la tache : ").strip()
-        theme = (input("theme (default, school...) : ").strip() or "default")
-        #today = date.today().strftime("%d-%m-%Y")   # DD-MM-YYYY          #input("Date d'ajout : ").strip()
-        #deadlinetmp = input("Deadline : ").strip()
-        deadline = checkdate("Deadline : ")      #datetime.strptime(deadlinetmp, "%d-%m-%Y")
-        # time_val = check_time(input("Temps estimé : ").strip(), default=0)
-        priority_val = securedInputInt("Priorité : ", 0, 5)
-        color = (input("Couleur : ").strip() or "normal")
-        if color.lower() not in colors and color.lower() != "normal":
-            print(f"Couleur '{color}' non reconnue, utilisation de 'normal'.")
-            color = "normal"
-        done_in = input("fait ? (o/n) : ").strip().lower()
-        done = done_in == "o"
-
-        if deadline==None:
-            deadline=""
-        
-        todo.add_task(
-            text=text,
-            theme=theme,
-            #date=today, # datenow()
-            deadline=deadline, # date
-            #time=time_val,
-            priority=priority_val,
-            color=color, # RGB WIP
-            done=done,
-        )
-        print("tache ajoutée au json")
-    else: #L
-        # work in progress
-        tasks = todo.list_tasks() #=lst
-        if not tasks:
-            print("pas de tache")
-        else:
-            print("done | theme | text | date | deadline | priority | color")
-            for t in tasks:
-                color_name = t.get("color", "").lower()
-                color_code = colors.get(color_name, "")
-                print(color_code + f'Réalisé : {t.get("done", False)}\nThème : {t.get("theme","")}\nTâche : {t.get("text","")}\n'
-                      f'Tâche créé le {t.get("date","")}\nPour le : {t.get("deadline","")}\n'
-                      f'Niveau de priorité/5 : {t.get("priority","")}\nCouleur : {t.get("color","")}\n' + Style.RESET_ALL + "\n")
 
 
 if __name__ == "__main__":

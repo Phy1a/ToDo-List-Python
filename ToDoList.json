@@ -1,71 +1,45 @@
 {
-    "tasks": [
-        {
-            "done": true,
-            "theme": "default",
-            "text": "aller chercher du lait",
-            "date": "17-10-2025",
-            "deadline": "20-10-2025",
-            "priority": 2,
-            "color": "normal"
-        },
-        {
-            "done": false,
-            "theme": "school",
-            "text": "essayer de pas s'endormir en cours d'ethique",
-            "date": "18-10-2025",
-            "deadline": "23-10-2025",
-            "priority": 1,
-            "color": "cyan"
-        },
-        {
-            "done": false,
-            "theme": "famille",
-            "text": "Faire bisous à Maman",
-            "date": "05-11-2025",
-            "deadline": "hjdgvhhf",
-            "priority": 10,
-            "color": "red"
-        },
-        {
-            "done": false,
-            "theme": "default",
-            "text": "sdgsdgdsg",
-            "date": "07-11-2025",
-            "deadline": "12-12-3300",
-            "time": 0,
-            "priority": "",
-            "color": "yellow"
-        },
-        {
-            "done": true,
-            "theme": "test",
-            "text": "Test 1",
-            "date": "07-11-2025",
-            "deadline": "12-12-2025",
-            "time": 0,
-            "priority": 3,
-            "color": "blue"
-        },
-        {
-            "done": false,
-            "theme": "test",
-            "text": "Test 2",
-            "date": "07-11-2025",
-            "deadline": "12-12-2025",
-            "time": 0,
-            "priority": 3,
-            "color": "magenta"
-        },
-        {
-            "done": false,
-            "theme": "default",
-            "text": "qsd",
-            "date": "07-11-2025",
-            "deadline": "12-12-2028",
-            "time": 0,
-            "priority": 2,
-            "color": "qds"
-        }
-    ]
+  "tasks": [
+    {
+      "done": true,
+      "theme": "default",
+      "text": "aller chercher du lait",
+      "date": "17-10-2025",
+      "deadline": "20-10-2025",
+      "priority": 2,
+      "color": "normal",
+      "id": 1
+    },
+    {
+      "done": false,
+      "theme": "school",
+      "text": "essayer de pas s'endormir en cours d'ethique",
+      "date": "18-10-2025",
+      "deadline": "23-10-2025",
+      "priority": 1,
+      "color": "cyan",
+      "id": 2
+    },
+    {
+      "done": false,
+      "theme": "famille",
+      "text": "Faire bisous à Maman",
+      "date": "05-11-2025",
+      "deadline": "",
+      "priority": 10,
+      "color": "red",
+      "id": 3
+    },
+    {
+      "id": 4,
+      "done": false,
+      "theme": "school",
+      "text": "Ajouter la fonction du mode suppression",
+      "date": "07-11-2025",
+      "deadline": "12-12-2025",
+      "time": 0,
+      "priority": 3,
+      "color": "yellow"
+    }
+  ]
 }
