@@ -32,6 +32,7 @@ class TodoList:
             # data = dict = {tasks: [{task1}, {task2}]}
             self.tasks = data.get("tasks", []) if isinstance(data, dict) else [] # if dict, get the value (the tasks with metadata) of "tasks" key 
             # self.tasks = lst = [{task1}, {task2}]
+            self.tasks_by_id = {task["id"]: task for task in data["tasks"]}
 
         except (json.JSONDecodeError, OSError):         # decode or read error
             self.tasks = []
@@ -71,6 +72,10 @@ class TodoList:
     def list_tasks(self):
         return list(self.tasks)
 
+    def delete_task(self, task_id):
+        # keep all the task exept the selected one
+        self.tasks = [task for task in self.tasks if task["id"] != task_id]
+        self._save()
 
 #useless ?
 def check_priority(val, default=0):
@@ -93,12 +98,13 @@ def check_time(val, default=0):
                 print("ce n'est pas une priorité valide")
                 continue
 
-def securedInputInt(message="Please enter un number : ", min=None, max=None):
+def securedInputInt(message="Please enter un number : ", min=None, max=None, can_be_empty=True):
     ''' This function returns the user selected integer and assure its validity
     Parameters : 
     char * message [In], the message to print to the user, has a default value
     int min [In], the minimum accepted value, optional
     int max [In], the maximum accepted value, optional
+    bool can_be_empty [In], if the number is optional then the user can let it empty
     Return : int result, the number selected by the user'''
     validity = False
     result = 0
@@ -108,8 +114,11 @@ def securedInputInt(message="Please enter un number : ", min=None, max=None):
             result_str = (input(message))
 
             # Empty priority
-            if (result_str == ""):
-                return ""
+            if(result_str == ""):
+                if (can_be_empty):
+                    return ""
+                else:
+                    validity = False
             
             result = int(result_str)
             if (min != None and result < min):
@@ -122,6 +131,33 @@ def securedInputInt(message="Please enter un number : ", min=None, max=None):
             print("Please enter a number.")
             validity = False    
     return result
+
+def securedInputString(message="Please enter a message: ", answers_list=None, can_be_empty=True):
+    ''' This function returns the user selected option and assure its validity
+    Parameters : 
+    char * message [In] : the message to print to the user, has a default value
+    char[] answers_list [In] : the list of possible answers
+    bool can_be_empty [In], if the number is optional then the user can let it empty
+    Return : char[], the selected answer by the user'''
+    validity = False
+    while (validity == False):
+        validity = True
+
+        result_str = (input(message)).strip().lower()
+
+        if(result_str == ""):
+            if (can_be_empty):
+                return ""
+            else:
+                validity = False
+
+        
+        if (result_str not in answers_list):
+            print(f"\nThis answer is invalid, the possible answer are {answers_list}\n")
+            validity = False
+ 
+    return result_str
+
 
 def voidstr(message):
     str = input(message)
@@ -169,8 +205,9 @@ def main():
     todo = TodoList("ToDoList.json")
 
     while True:
-        mode = getMode()
-        print("")
+        print("------------------------")
+        mode = securedInputString("Pour ouvrir la liste : \nEn mode lecture, tapez L \nEn mode ajout : tapez A\nEn mode suppression: tapez S\nPour quitter: tapez Q\n>>> ",['a', 'l', 's', 'q'],False)
+        print("------------------------\n\n")
         if mode == "a":
             print("Ajout d'une tache")
             text = voidstr("Texte de la tache : ").strip()      # input("Texte de la tache : ").strip()
@@ -205,17 +242,30 @@ def main():
             # work in progress
             tasks = todo.list_tasks() #=lst
             if not tasks:
-                print("pas de tache")
+                print("No task")
             else:
                 #print("id | done | theme | text | date | deadline | priority | color")
                 for t in tasks:
+                    printTask(t)
+        elif mode == 's': # mode == s
+            tasks = todo.list_tasks() #=lst
+            task_id_list = []
+            if not tasks:
+                print("No task")
+            else:
+                print("----Tasks sum up----\n")
+                for t in tasks:
                     color_name = t.get("color", "").lower()
                     color_code = colors.get(color_name, "")
-                    print(color_code + f'Id : {t.get("id","Error")}\nRéalisé : {t.get("done", False)}\nThème : {t.get("theme","")}\nTâche : {t.get("text","")}\n'
-                        f'Tâche créé le {t.get("date","")}\nPour le : {t.get("deadline","")}\n'
-                        f'Niveau de priorité/5 : {t.get("priority","")}\nCouleur : {t.get("color","")}\n' + Style.RESET_ALL + "\n")
-        elif mode == 's': # mode == s
-            print("something")
+                    task_id_list.append(str(t.get("id", "")))
+                    print(color_code + f'Id : {t.get("id","Error")}\nTâche : {t.get("text","")}\n' + Style.RESET_ALL + "\n")
+
+                selected_id = securedInputString("Please enter the id of the task you want to delete : ",task_id_list, True)
+                if selected_id != "":
+                    todo.delete_task(int(selected_id))
+                    print(f"Task n°{selected_id} successfully deleted")
+                else:
+                    print(Fore.RED + "Deletion aborted" )
         else : # mode == q, to quit
             break
 
