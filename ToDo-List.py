@@ -143,22 +143,24 @@ def securedInputString(message="Please enter a message: ", answers_list=None, ca
     while (validity == False):
         validity = True
 
-        result_str = (input(message)).strip().lower()
+        result_str = (input(message)).strip()
 
         if(result_str == ""):
             if (can_be_empty):
                 return ""
             else:
+                print(f"\nThis answer isn't optional therefore it can't be empty\n")
                 validity = False
 
         
-        if (result_str not in answers_list):
+        if (answers_list != None and result_str.lower() not in answers_list):
             print(f"\nThis answer is invalid, the possible answer are {answers_list}\n")
             validity = False
  
     return result_str
 
 
+# Useless now
 def voidstr(message):
     str = input(message)
     while True:
@@ -182,6 +184,7 @@ def checkdate(message):
         except ValueError:
             print("Date non valide (jj-mm-yyyy)")
 
+#Useless
 def getMode():
     ''' This function returns the user selected mode and assure its validity
     Parameters : None
@@ -197,32 +200,33 @@ def getMode():
 def printTask(task):
     color_name = task.get("color", "").lower()
     color_code = colors.get(color_name, "")
-    print(color_code + f'Id : {task.get("id","Error")}\nRéalisé : {task.get("done", False)}\nThème : {task.get("theme","")}\nTâche : {task.get("text","")}\n'
-        f'Tâche créé le {task.get("date","")}\nPour le : {task.get("deadline","")}\n'
-        f'Niveau de priorité/5 : {task.get("priority","")}\nCouleur : {task.get("color","")}\n' + Style.RESET_ALL + "\n")
+    print(color_code + f'Id : {task.get("id","Error")}\nDone : {task.get("done", False)}\nTheme : {task.get("theme","")}\nTask : {task.get("text","")}\n'
+        f'Task created on {task.get("date","")}\nFor the : {task.get("deadline","")}\n'
+        f'Priority level/5 : {task.get("priority","")}\nColor : {task.get("color","")}\n' + Style.RESET_ALL + "\n")
 
 def main():
     todo = TodoList("ToDoList.json")
 
     while True:
         print("------------------------")
-        mode = securedInputString("Pour ouvrir la liste : \nEn mode lecture, tapez L \nEn mode ajout : tapez A\nEn mode suppression: tapez S\nPour quitter: tapez Q\n>>> ",['a', 'l', 's', 'q'],False)
+        mode = securedInputString("To open the list: \nIn read mode, type L \nIn add mode: type A\nIn delete mode: type S\nTo exit: type Q\n>>> ",['a', 'l', 's', 'q'],False)
         print("------------------------\n\n")
         if mode == "a":
-            print("Ajout d'une tache")
-            text = voidstr("Texte de la tache : ").strip()      # input("Texte de la tache : ").strip()
+            print("Task addition")
+            #text = voidstr("Texte de la tache : ").strip()      # input("Texte de la tache : ").strip()
+            text = securedInputString("Task name : ", can_be_empty=False)      # input("Texte de la tache : ").strip()
             theme = (input("theme (default, school...) : ").strip() or "default")
             #today = date.today().strftime("%d-%m-%Y")   # DD-MM-YYYY          #input("Date d'ajout : ").strip()
             #deadlinetmp = input("Deadline : ").strip()
             deadline = checkdate("Deadline : ")      #datetime.strptime(deadlinetmp, "%d-%m-%Y")
             # time_val = check_time(input("Temps estimé : ").strip(), default=0)
             priority_val = securedInputInt("Priorité : ", 0, 5)
-            color = (input("Couleur : ").strip() or "normal")
+            color = (input("Color : ").strip() or "normal")
             if color.lower() not in colors and color.lower() != "normal":
-                print(f"Couleur '{color}' non reconnue, utilisation de 'normal'.")
+                print(f"Color '{color}' unknown, use of 'normal' instead.")
                 color = "normal"
-            done_in = input("fait ? (o/n) : ").strip().lower()
-            done = done_in == "o"
+            done_in = input("Done ? (y/n) : ").strip().lower()
+            done = done_in == "y"
 
             if deadline==None:
                 deadline=""
@@ -237,7 +241,7 @@ def main():
                 color=color, # RGB WIP
                 done=done,
             )
-            print("tache ajoutée au json")
+            print("task added to the json")
         elif mode == 'l': #L
             # work in progress
             tasks = todo.list_tasks() #=lst
@@ -263,7 +267,7 @@ def main():
                 selected_id = securedInputString("Please enter the id of the task you want to delete : ",task_id_list, True)
                 if selected_id != "":
                     todo.delete_task(int(selected_id))
-                    print(f"Task n°{selected_id} successfully deleted")
+                    print(Fore.GREEN + f"Task n°{selected_id} successfully deleted")
                 else:
                     print(Fore.RED + "Deletion aborted" )
         else : # mode == q, to quit
