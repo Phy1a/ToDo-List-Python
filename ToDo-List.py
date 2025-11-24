@@ -5,6 +5,7 @@ from datetime import date
 from datetime import datetime
 
 from colorama import Fore, Style, init
+
 init(autoreset=True)
 colors = {
     "red": Fore.RED,
@@ -153,7 +154,7 @@ def securedInputString(message="Please enter a message: ", answers_list=None, ca
                 validity = False
 
         
-        if (answers_list != None and result_str.lower() not in answers_list):
+        if (answers_list != None and result_str not in answers_list):
             print(f"\nThis answer is invalid, the possible answer are {answers_list}\n")
             validity = False
  
@@ -209,7 +210,7 @@ def main():
 
     while True:
         print("------------------------")
-        mode = securedInputString("To open the list: \nIn read mode, type L \nIn add mode: type A\nIn delete mode: type S\nTo exit: type Q\n>>> ",['a', 'l', 's', 'q'],False)
+        mode = securedInputString("To open the list: \nIn read mode, type L \nIn add mode: type A\nIn delete mode: type S\nTo exit: type Q\n>>> ",['a', 'l', 's', 'q', 'A', 'L', 'S', 'Q'],False)
         print("------------------------\n\n")
         if mode == "a":
             print("Task addition")
