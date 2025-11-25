@@ -211,8 +211,9 @@ def main():
     while True:
         print("------------------------")
         mode = securedInputString("To open the list: \nIn read mode, type L \nIn add mode: type A\nIn delete mode: type S\nTo exit: type Q\n>>> ",['a', 'l', 's', 'q', 'A', 'L', 'S', 'Q'],False)
+        print(mode)
         print("------------------------\n\n")
-        if mode == "a":
+        if mode.lower() == "a":
             print("Task addition")
             #text = voidstr("Texte de la tache : ").strip()      # input("Texte de la tache : ").strip()
             text = securedInputString("Task name : ", can_be_empty=False)      # input("Texte de la tache : ").strip()
@@ -243,7 +244,7 @@ def main():
                 done=done,
             )
             print("task added to the json")
-        elif mode == 'l': #L
+        elif mode.lower() == 'l': #L
             # work in progress
             tasks = todo.list_tasks() #=lst
             if not tasks:
@@ -252,7 +253,7 @@ def main():
                 #print("id | done | theme | text | date | deadline | priority | color")
                 for t in tasks:
                     printTask(t)
-        elif mode == 's': # mode == s
+        elif mode.lower() == 's': # mode == s
             tasks = todo.list_tasks() #=lst
             task_id_list = []
             if not tasks:
@@ -271,7 +272,7 @@ def main():
                     print(Fore.GREEN + f"Task n°{selected_id} successfully deleted")
                 else:
                     print(Fore.RED + "Deletion aborted" )
-        else : # mode == q, to quit
+        elif mode.lower() == "q": # mode == q, to quit
             break
 
 
