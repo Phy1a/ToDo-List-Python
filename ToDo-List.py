@@ -48,9 +48,9 @@ class TodoList:
             json.dump(data, f, ensure_ascii=False, indent=4)    # false for emojis (maybe), 4 space for indentation
 
     def add_task(self, *, text: str, theme: str = "default", date= date.today(),
-                 deadline= date.today(), time: int = 0, priority: int = 0,
+                 deadline, time: int = 0, priority: int = 0,
                  color: str = "normal", done: bool = False):
-        if deadline != "":
+        if deadline != None:
             deadline = deadline.strftime("%d-%m-%Y")
         task = {
             "id" : len(self.tasks)+ 1, # unique id at a given time
@@ -229,8 +229,8 @@ def main():
             done_in = input("Done ? (y/n) : ").strip().lower()
             done = done_in == "y"
 
-            if deadline==None:
-                deadline=""
+            if priority_val =="":
+                priority_val = 0
             
             todo.add_task(
                 text=text,
