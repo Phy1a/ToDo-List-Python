@@ -78,6 +78,21 @@ class TodoList:
         self.tasks = [task for task in self.tasks if task["id"] != task_id]
         self._save()
 
+    def _printSumUpTask(self):
+        '''This function print the name and id of each task in the ToDoList'''
+        task_id_list = []
+        if not self.tasks:
+            print("No task")
+        else:
+            print("----Tasks sum up----\n")
+            for t in self.tasks:
+                color_name = t.get("color", "").lower()
+                color_code = colors.get(color_name, "")
+                task_id_list.append(str(t.get("id", "")))
+                print(color_code + f'Id : {t.get("id","Error")}\nTâche : {t.get("text","")}\n' + Style.RESET_ALL)
+        return task_id_list
+
+
 #useless ?
 def check_priority(val, default=0):
     while True:
@@ -205,75 +220,78 @@ def printTask(task):
         f'Task created on {task.get("date","")}\nFor the : {task.get("deadline","")}\n'
         f'Priority level/5 : {task.get("priority","")}\nColor : {task.get("color","")}\n' + Style.RESET_ALL + "\n")
 
+
 def main():
     todo = TodoList("ToDoList.json")
-
     while True:
         print("------------------------")
-        mode = securedInputString("To open the list: \nIn read mode, type L \nIn add mode: type A\nIn delete mode: type S\nTo exit: type Q\n>>> ",['a', 'l', 's', 'q', 'A', 'L', 'S', 'Q'],False)
-        print(mode)
-        print("------------------------\n\n")
-        if mode.lower() == "a":
-            print("Task addition")
-            #text = voidstr("Texte de la tache : ").strip()      # input("Texte de la tache : ").strip()
-            text = securedInputString("Task name : ", can_be_empty=False)      # input("Texte de la tache : ").strip()
-            theme = (input("theme (default, school...) : ").strip() or "default")
-            #today = date.today().strftime("%d-%m-%Y")   # DD-MM-YYYY          #input("Date d'ajout : ").strip()
-            #deadlinetmp = input("Deadline : ").strip()
-            deadline = checkdate("Deadline : ")      #datetime.strptime(deadlinetmp, "%d-%m-%Y")
-            # time_val = check_time(input("Temps estimé : ").strip(), default=0)
-            priority_val = securedInputInt("Priorité : ", 0, 5)
-            color = (input("Color : ").strip() or "normal")
-            if color.lower() not in colors and color.lower() != "normal":
-                print(f"Color '{color}' unknown, use of 'normal' instead.")
-                color = "normal"
-            done_in = input("Done ? (y/n) : ").strip().lower()
-            done = done_in == "y"
+        mode = securedInputString("To open the list: \nIn read mode, type L \nIn edition mode: type E\nIn delete mode: type S\nTo exit: type Q\n>>> ",['e','l', 's', 'q', 'e', 'L', 'S', 'Q'],False)
+        print("------------------------\n")
+        match mode.lower():
+            case 'e':
+                print("------------------------")
+                mode = securedInputString("Add a task : type A,\nEdit a task content : type E\nMark a tast done : type M \nGo back to thre vious menu : type Q\n>>> ",['a', 'e', 'm', 'q', 'A', 'E', 'M', 'Q'],False)
+                print("------------------------\n")
+                match mode.lower():
+                    case 'a':
+                        print("Task addition")
+                        #text = voidstr("Texte de la tache : ").strip()      # input("Texte de la tache : ").strip()
+                        text = securedInputString("Task name : ", can_be_empty=False)      # input("Texte de la tache : ").strip()
+                        theme = (input("theme (default, school...) : ").strip() or "default")
+                        #today = date.today().strftime("%d-%m-%Y")   # DD-MM-YYYY          #input("Date d'ajout : ").strip()
+                        #deadlinetmp = input("Deadline : ").strip()
+                        deadline = checkdate("Deadline : ")      #datetime.strptime(deadlinetmp, "%d-%m-%Y")
+                        # time_val = check_time(input("Temps estimé : ").strip(), default=0)
+                        priority_val = securedInputInt("Priorité : ", 0, 5)
+                        color = (input("Color : ").strip() or "normal")
+                        if color.lower() not in colors and color.lower() != "normal":
+                            print(f"Color '{color}' unknown, use of 'normal' instead.")
+                            color = "normal"
+                        done_in = input("Done ? (y/n) : ").strip().lower()
+                        done = done_in == "y"
 
-            if priority_val =="":
-                priority_val = 0
-            
-            todo.add_task(
-                text=text,
-                theme=theme,
-                #date=today, # datenow()
-                deadline=deadline, # date
-                #time=time_val,
-                priority=priority_val,
-                color=color, # RGB WIP
-                done=done,
-            )
-            print("task added to the json")
-        elif mode.lower() == 'l': #L
-            # work in progress
-            tasks = todo.list_tasks() #=lst
-            if not tasks:
-                print("No task")
-            else:
-                #print("id | done | theme | text | date | deadline | priority | color")
-                for t in tasks:
-                    printTask(t)
-        elif mode.lower() == 's': # mode == s
-            tasks = todo.list_tasks() #=lst
-            task_id_list = []
-            if not tasks:
-                print("No task")
-            else:
-                print("----Tasks sum up----\n")
-                for t in tasks:
-                    color_name = t.get("color", "").lower()
-                    color_code = colors.get(color_name, "")
-                    task_id_list.append(str(t.get("id", "")))
-                    print(color_code + f'Id : {t.get("id","Error")}\nTâche : {t.get("text","")}\n' + Style.RESET_ALL + "\n")
+                        if priority_val =="":
+                            priority_val = 0
+                        
+                        todo.add_task(
+                            text=text,
+                            theme=theme,
+                            deadline=deadline, # date
+                            priority=priority_val,
+                            color=color, # RGB WIP
+                            done=done,
+                        )
+                        print("task added to the json")
+                    case 'e':
+                        todo._printSumUpTask
 
-                selected_id = securedInputString("Please enter the id of the task you want to delete : ",task_id_list, True)
-                if selected_id != "":
-                    todo.delete_task(int(selected_id))
-                    print(Fore.GREEN + f"Task n°{selected_id} successfully deleted")
+                        continue
+                    case 'q':
+                        continue
+                    case default:
+                        continue
+            case 'l': #L
+                # work in progress
+                tasks = todo.list_tasks() #=lst
+                if not tasks:
+                    print("No task")
                 else:
-                    print(Fore.RED + "Deletion aborted" )
-        elif mode.lower() == "q": # mode == q, to quit
-            break
+                    #print("id | done | theme | text | date | deadline | priority | color")
+                    for t in tasks:
+                        printTask(t)
+            case 's': # mode == s
+                task_id_list = todo._printSumUpTask()
+                if (task_id_list != []):
+                    selected_id = securedInputString("Please enter the id of the task you want to delete : ",task_id_list, True)
+                    if selected_id != "":
+                        todo.delete_task(int(selected_id))
+                        print(Fore.GREEN + f"Task n°{selected_id} successfully deleted")
+                    else:
+                        print(Fore.RED + "Deletion aborted" )
+            case 'q': # mode == q, to quit
+                break
+            case default:
+                break
 
 
 if __name__ == "__main__":
