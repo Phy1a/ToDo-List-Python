@@ -3,7 +3,7 @@
         {
             "done": true,
             "theme": "default",
-            "text": "aller chercher du lait",
+            "text": "Aller chercher du lait",
             "date": "17-10-2025",
             "deadline": "20-10-2025",
             "priority": 2,
@@ -13,7 +13,7 @@
         {
             "done": false,
             "theme": "school",
-            "text": "essayer de pas s'endormir en cours d'ethique",
+            "text": "Essayer de pas s'endormir en cours d'ethique",
             "date": "18-10-2025",
             "deadline": "23-10-2025",
             "priority": 1,

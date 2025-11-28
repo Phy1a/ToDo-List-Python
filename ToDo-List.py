@@ -221,6 +221,62 @@ def printTask(task):
         f'Priority level/5 : {task.get("priority","")}\nColor : {task.get("color","")}\n' + Style.RESET_ALL + "\n")
 
 
+def sortTask(task, mode):
+    """
+    par date (ajout/deadline) (les plus récents en bas/deadline la plus proche en bas)
+    par statut
+    par ordre alphabétique
+    priorité
+    """
+    if not isinstance(task, list):
+        return []
+    if mode == "date_added":
+        # Expects `task` to be a list of task dicts; returns sorted list
+        def parse_date(t):
+            d = t.get("date", "")
+            try:
+                return datetime.strptime(d, "%d-%m-%Y")
+            except Exception:
+                # Put invalid/missing dates at the end
+                return datetime.max
+        return sorted(task, key=parse_date)
+    elif mode == "priority":
+        def parse_priority(t):
+            p = t.get("priority", "")
+            return p
+        return sorted(task, key=parse_priority)
+    elif mode == "alphabetically":
+        # all tasks should start with uppercases for this to work
+        def parse_tasks(t):
+            t = t.get("text", "")
+            return t
+        return sorted(task, key=parse_tasks)
+    elif mode == "deadline":
+        def key_deadline(t):
+            today = datetime.today().date()
+            s = t.get("deadline", "") or ""
+            try:
+                d = datetime.strptime(s, "%d-%m-%Y").date()
+            except Exception:
+                return (0, 0)
+            distance = abs((d - today).days)
+            return (1, -distance, d.toordinal())
+        return sorted(task, key=key_deadline)
+    elif mode == "statut":
+        done_tasks = []
+        not_done_tasks = []
+        for t in task:
+            if t.get("done", False):
+                done_tasks.append(t)
+            else:
+                not_done_tasks.append(t)
+        return done_tasks + not_done_tasks
+    return []
+
+
+
+
+
 def main():
     todo = TodoList("ToDoList.json")
     while True:
@@ -237,6 +293,7 @@ def main():
                         print("Task addition")
                         #text = voidstr("Texte de la tache : ").strip()      # input("Texte de la tache : ").strip()
                         text = securedInputString("Task name : ", can_be_empty=False)      # input("Texte de la tache : ").strip()
+                        text = text[0].upper() + text[1:]   # uppercase for first letter
                         theme = (input("theme (default, school...) : ").strip() or "default")
                         #today = date.today().strftime("%d-%m-%Y")   # DD-MM-YYYY          #input("Date d'ajout : ").strip()
                         #deadlinetmp = input("Deadline : ").strip()
@@ -273,8 +330,26 @@ def main():
             case 'l': #L
                 # work in progress
                 tasks = todo.list_tasks() #=lst
-                if not tasks:
+                sort = securedInputString("Choose a sort (optional):\nWithout sort: type L\nSort by task added date: type T\nSort by deadline: type DL\nSort alphabetically: type A\nSort by Done status: type D\nSort by priority: type P\n>>> ", 
+                                          ["l", "L", "t", "T", "dl", "DL", "a", "A", "d", "D", "p", "P", ""], 
+                                          True)
+                print("------------------------\n")
+                if not tasks or tasks == []:
                     print("No task")
+                elif sort != "" or sort.lower !="l":
+                    match sort.lower():
+                        case "t":
+                            tasks = sortTask(tasks, "date_added")
+                        case "dl":
+                            tasks = sortTask(tasks, "deadline")
+                        case "a":
+                            tasks = sortTask(tasks, "alphabetically")
+                        case "d":
+                            tasks = sortTask(tasks, "statut")
+                        case "p":
+                            tasks = sortTask(tasks, "priority")
+                    for t in tasks:
+                        printTask(t)
                 else:
                     #print("id | done | theme | text | date | deadline | priority | color")
                     for t in tasks:
