@@ -67,7 +67,31 @@ class TodoList:
         self._save()
 
         # Printing
-        print("Task successfully added to the JSON file as:\n")
+        print(Fore.GREEN + "Task successfully added to the JSON file as:\n")
+        printTask(task)
+
+    def _edit_task(self, task, text ="", theme = "",
+                 deadline= "", priority= "",
+                 color = "", done= ""):
+        if deadline != "":
+            deadline = deadline.strftime("%d-%m-%Y")
+        if (done != ""):
+            task.update({"done": done})
+        if (theme != ""):
+            task.update({"theme": theme})
+        if (text != ""):
+            task.update({"text": text})
+        if (deadline != ""):
+            task.update({"deadline": deadline})
+        if (priority != ""):
+            task.update({"priority": priority})
+        if (color != ""):
+            task.update({"color": color})
+        
+        self._save()
+
+        # Printing
+        print(Fore.GREEN + "Task successfully edited to the JSON file as:\n")
         printTask(task)
 
     def list_tasks(self):
@@ -216,9 +240,16 @@ def getMode():
 def printTask(task):
     color_name = task.get("color", "").lower()
     color_code = colors.get(color_name, "")
-    print(color_code + f'Id : {task.get("id","Error")}\nDone : {task.get("done", False)}\nTheme : {task.get("theme","")}\nTask : {task.get("text","")}\n'
-        f'Task created on {task.get("date","")}\nFor the : {task.get("deadline","")}\n'
-        f'Priority level/5 : {task.get("priority","")}\nColor : {task.get("color","")}\n' + Style.RESET_ALL + "\n")
+    print()
+    print(color_code + f'Id : {task.get("id","Error")}\nTask : {task.get("text","")}\nDone : {task.get("done", False)}'+ Style.RESET_ALL)
+    if (task.get("theme","") != "default"):
+        print(color_code + f'Theme : {task.get("theme","")}' + Style.RESET_ALL)
+    print(color_code + f'Task created on {task.get("date","")}'  + Style.RESET_ALL)
+    if (task.get("deadline","") != ""):
+        print(color_code + f'For the : {task.get("deadline","")}' + Style.RESET_ALL)
+    if (task.get("priority","") != 0):
+        print(color_code + f'Priority level/5 : {task.get("priority","")}' + Style.RESET_ALL)
+    print()
 
 
 def sortTask(task, mode):
@@ -286,7 +317,7 @@ def main():
         match mode.lower():
             case 'e':
                 print("------------------------")
-                mode = securedInputString("Add a task : type A,\nEdit a task content : type E\nMark a tast done : type M \nGo back to thre vious menu : type Q\n>>> ",['a', 'e', 'm', 'q', 'A', 'E', 'M', 'Q'],False)
+                mode = securedInputString("Add a task : type A\nEdit a task content : type E\nMark a tast done : type M \nGo back to thre vious menu : type Q\n>>> ",['a', 'e', 'm', 'q', 'A', 'E', 'M', 'Q'],False)
                 print("------------------------\n")
                 match mode.lower():
                     case 'a':
@@ -316,13 +347,41 @@ def main():
                             deadline=deadline, # date
                             priority=priority_val,
                             color=color, # RGB WIP
-                            done=done,
+                            done=done
                         )
                         print("task added to the json")
                     case 'e':
-                        todo._printSumUpTask
-
-                        continue
+                        task_id_list = todo._printSumUpTask()
+                        if (task_id_list != []):
+                            selected_id = securedInputString("Please enter the id of the task you want to edit : ",task_id_list, True)
+                            if selected_id != "":
+                                for t in todo.tasks:
+                                    if (str(t.get("id", "")) == selected_id):
+                                        printTask(t)
+                                        print("\nTo not modify the champ, just press enter\n")
+                                        text = securedInputString("Task name : ", can_be_empty=True)      # input("Texte de la tache : ").strip()
+                                        if(text != ""):
+                                            text = text[0].upper() + text[1:]   # uppercase for first letter
+                                        theme = (input("theme (default, school...) : ").strip() or "")
+                                        deadline = checkdate("Deadline : ")    #datetime.strptime(deadlinetmp, "%d-%m-%Y")
+                                        priority_val = (securedInputInt("Priorité : ", 0, 5) or "")
+                                        color = (input("Color : ").strip() or "")
+                                        if color.lower() not in colors and color.lower() != "":
+                                            print(f"Color '{color}' unknown, use of 'normal' instead.")
+                                            color = ""
+                                        done_in = input("Done ? (y/n) : ").strip().lower()
+                                        done = done_in == "y"
+                                        todo._edit_task(task=t,
+                                                        text=text,
+                                                        theme=theme,
+                                                        deadline=deadline, # date
+                                                        priority = priority_val,
+                                                        color=color, # RGB WIP
+                                                        done=done)
+                            else:
+                                print(Fore.RED + "Edition aborted" )
+                        else:
+                            print("Edition aborted")
                     case 'q':
                         continue
                     case default:
