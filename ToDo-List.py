@@ -13,7 +13,8 @@ colors = {
     "blue": Fore.BLUE,
     "yellow": Fore.YELLOW,
     "cyan": Fore.CYAN,
-    "magenta": Fore.MAGENTA
+    "magenta": Fore.MAGENTA,
+    "black": Fore.BLACK
 }
 
 class TodoList:
@@ -71,9 +72,9 @@ class TodoList:
         printTask(task)
 
     def _edit_task(self, task, text ="", theme = "",
-                 deadline= "", priority= "",
+                 deadline= None, priority= "",
                  color = "", done= ""):
-        if deadline != "":
+        if (deadline != None):
             deadline = deadline.strftime("%d-%m-%Y")
         if (done != ""):
             task.update({"done": done})
@@ -81,7 +82,7 @@ class TodoList:
             task.update({"theme": theme})
         if (text != ""):
             task.update({"text": text})
-        if (deadline != ""):
+        if (deadline != None):
             task.update({"deadline": deadline})
         if (priority != ""):
             task.update({"priority": priority})
@@ -113,7 +114,7 @@ class TodoList:
                 color_name = t.get("color", "").lower()
                 color_code = colors.get(color_name, "")
                 task_id_list.append(str(t.get("id", "")))
-                print(color_code + f'Id : {t.get("id","Error")}\nTâche : {t.get("text","")}\n' + Style.RESET_ALL)
+                print(color_code + f'Id : {t.get("id","Error")}\nTask : {t.get("text","")}\nDone : {t.get("done","")}\n' + Style.RESET_ALL)
         return task_id_list
 
 
@@ -211,6 +212,9 @@ def voidstr(message):
             return str
 
 def checkdate(message):
+    '''This fonction checks that the input message matchs the date format dd-mm-yyyy or None if nothing is entered
+    Parameter : str[] message
+    return : str[] like dd-mm-yyyy or None '''
     while True:
         date_str = input(message)
         if date_str == "":
@@ -315,7 +319,7 @@ def main():
         mode = securedInputString("To open the list: \nIn read mode, type L \nIn edition mode: type E\nIn delete mode: type S\nTo exit: type Q\n>>> ",['e','l', 's', 'q', 'e', 'L', 'S', 'Q'],False)
         print("------------------------\n")
         match mode.lower():
-            case 'e':
+            case 'e': #edit mode
                 print("------------------------")
                 mode = securedInputString("Add a task : type A\nEdit a task content : type E\nMark a tast done : type M \nGo back to thre vious menu : type Q\n>>> ",['a', 'e', 'm', 'q', 'A', 'E', 'M', 'Q'],False)
                 print("------------------------\n")
@@ -328,7 +332,7 @@ def main():
                         theme = (input("theme (default, school...) : ").strip() or "default")
                         #today = date.today().strftime("%d-%m-%Y")   # DD-MM-YYYY          #input("Date d'ajout : ").strip()
                         #deadlinetmp = input("Deadline : ").strip()
-                        deadline = checkdate("Deadline : ")      #datetime.strptime(deadlinetmp, "%d-%m-%Y")
+                        deadline = checkdate("Deadline : ")      # %d-%m-%Y or None
                         # time_val = check_time(input("Temps estimé : ").strip(), default=0)
                         priority_val = securedInputInt("Priorité : ", 0, 5)
                         color = (input("Color : ").strip() or "normal")
@@ -344,13 +348,13 @@ def main():
                         todo.add_task(
                             text=text,
                             theme=theme,
-                            deadline=deadline, # date
+                            deadline=deadline, # date or None
                             priority=priority_val,
                             color=color, # RGB WIP
                             done=done
                         )
                         print("task added to the json")
-                    case 'e':
+                    case 'e': # full edit case
                         task_id_list = todo._printSumUpTask()
                         if (task_id_list != []):
                             selected_id = securedInputString("Please enter the id of the task you want to edit : ",task_id_list, True)
@@ -382,6 +386,21 @@ def main():
                                 print(Fore.RED + "Edition aborted" )
                         else:
                             print("Edition aborted")
+                    case 'm': # mark task done case
+                        task_id_list = todo._printSumUpTask()
+                        if (task_id_list != []):
+                            selected_id = securedInputString("Please enter the id of the task you want to toggle mark as done : ",task_id_list, True)
+                            if selected_id != "":
+                                for t in todo.tasks:
+                                    if (str(t.get("id", "")) == selected_id):
+                                        if(t.get("done", "")==True):
+                                            todo._edit_task(task=t,done=False)
+                                        else:
+                                            todo._edit_task(task=t,done=True)
+                            else:
+                                print(Fore.RED + "Operation aborted" )
+                        else:
+                            print("Operation aborted")
                     case 'q':
                         continue
                     case default:

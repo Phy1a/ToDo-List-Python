@@ -47,7 +47,7 @@
             "theme": "python",
             "text": "Enregistrer les taches sous forme de dicionnaire avec pour clef l'id",
             "date": "16-11-2025",
-            "deadline": "",
+            "deadline": null,
             "time": 0,
             "priority": 2,
             "color": "magenta"
