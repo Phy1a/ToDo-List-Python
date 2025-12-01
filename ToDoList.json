@@ -1,34 +1,37 @@
 {
     "tasks": [
         {
+            "id": 1,
             "done": true,
             "theme": "default",
             "text": "Aller chercher du lait",
             "date": "17-10-2025",
             "deadline": "20-10-2025",
+            "time": 0,
             "priority": 2,
-            "color": "normal",
-            "id": 1
+            "color": "normal"            
         },
         {
+            "id": 2,
             "done": false,
             "theme": "school",
             "text": "Essayer de pas s'endormir en cours d'ethique",
             "date": "18-10-2025",
             "deadline": "23-10-2025",
+            "time": 0,
             "priority": 1,
-            "color": "cyan",
-            "id": 2
+            "color": "cyan"
         },
         {
+            "id": 3,
             "done": false,
             "theme": "famille",
             "text": "Faire bisous à Maman",
             "date": "05-11-2025",
             "deadline": "",
-            "priority": 10,
-            "color": "red",
-            "id": 3
+            "time": 0,
+            "priority": 5,
+            "color": "red"
         },
         {
             "id": 4,

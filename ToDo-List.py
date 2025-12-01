@@ -340,6 +340,10 @@ def main():
                             print(f"Color '{color}' unknown, use of 'normal' instead.")
                             color = "normal"
                         done_in = input("Done ? (y/n) : ").strip().lower()
+                        while True:
+                            done_in = input("Done ? (y/n) : ").strip().lower()
+                            if done_in == "y" or done_in == "n" or done_in == "": # "" => false (by default)
+                                break
                         done = done_in == "y"
 
                         if priority_val =="":
@@ -375,7 +379,10 @@ def main():
                                         if color.lower() not in colors and color.lower() != "":
                                             print(f"Color '{color}' unknown, use of 'normal' instead.")
                                             color = ""
-                                        done_in = input("Done ? (y/n) : ").strip().lower()
+                                        while True:
+                                            done_in = input("Done ? (y/n) : ").strip().lower()
+                                            if done_in == "y" or done_in == "n" or done_in == "":
+                                                break
                                         done = done_in == "y"
                                         todo._edit_task(task=t,
                                                         text=text,
@@ -416,7 +423,7 @@ def main():
                 print("------------------------\n")
                 if not tasks or tasks == []:
                     print("No task")
-                elif sort != "" or sort.lower !="l":
+                elif sort != "" or sort.lower() !="l":
                     match sort.lower():
                         case "t":
                             tasks = sortTask(tasks, "date_added")
