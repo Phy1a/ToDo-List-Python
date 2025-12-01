@@ -71,9 +71,9 @@ class TodoList:
         print(Fore.GREEN + "Task successfully added to the JSON file as:\n")
         printTask(task)
 
-    def _edit_task(self, task, text ="", theme = "",
-                 deadline= None, priority= "",
-                 color = "", done= ""):
+    def _edit_task(self, done, task, text ="", theme = "",
+                 deadline= None, priority:int =0,
+                 color = ""):
         if (deadline != None):
             deadline = deadline.strftime("%d-%m-%Y")
         if (done != ""):
@@ -316,7 +316,7 @@ def main():
     todo = TodoList("ToDoList.json")
     while True:
         print("------------------------")
-        mode = securedInputString("To open the list: \nIn read mode, type L \nIn edition mode: type E\nIn delete mode: type S\nTo exit: type Q\n>>> ",['e','l', 's', 'q', 'e', 'L', 'S', 'Q'],False)
+        mode = securedInputString("To open the list: \nIn read mode, type L \nIn edition mode: type E\nIn delete mode: type S\nTo exit: type Q\n>>> ",['e','l', 's', 'q', 'E', 'L', 'S', 'Q'],False)
         print("------------------------\n")
         match mode.lower():
             case 'e': #edit mode
@@ -350,7 +350,7 @@ def main():
                             theme=theme,
                             deadline=deadline, # date or None
                             priority=priority_val,
-                            color=color, # RGB WIP
+                            color=color,
                             done=done
                         )
                         print("task added to the json")
@@ -369,6 +369,8 @@ def main():
                                         theme = (input("theme (default, school...) : ").strip() or "")
                                         deadline = checkdate("Deadline : ")    #datetime.strptime(deadlinetmp, "%d-%m-%Y")
                                         priority_val = (securedInputInt("Priorité : ", 0, 5) or "")
+                                        if priority_val =="":
+                                            priority_val = t.get("priority", "")
                                         color = (input("Color : ").strip() or "")
                                         if color.lower() not in colors and color.lower() != "":
                                             print(f"Color '{color}' unknown, use of 'normal' instead.")
@@ -380,7 +382,7 @@ def main():
                                                         theme=theme,
                                                         deadline=deadline, # date
                                                         priority = priority_val,
-                                                        color=color, # RGB WIP
+                                                        color=color,
                                                         done=done)
                             else:
                                 print(Fore.RED + "Edition aborted" )
