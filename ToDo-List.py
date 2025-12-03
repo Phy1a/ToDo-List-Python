@@ -148,7 +148,7 @@ def check_priority(val, default=0):
             try:
                 return int(val)
             except (TypeError, ValueError):
-                print("ce n'est pas une priorité valide")
+                print("This is not a valid priority")
                 continue
 
 def check_time(val, default=0):
@@ -159,7 +159,7 @@ def check_time(val, default=0):
             try:
                 return int(val)
             except (TypeError, ValueError):
-                print("ce n'est pas une priorité valide")
+                print("This is not a valid priority")
                 continue
 
 def securedInputInt(message="Please enter un number : ", min: int =None, max: int =None, can_be_empty=True):
@@ -229,7 +229,7 @@ def voidstr(message):
     str = input(message)
     while True:
         if str=="":
-            print("Veuillez rentrer une tache")
+            print("Please enter a task")
             str = input(message)
         else:
             return str
@@ -246,7 +246,7 @@ def checkdate(message):
             #print(date_str, "%d-%m-%Y"), date.today()
             date_obj = datetime.strptime(date_str, "%d-%m-%Y").date()
             if date_obj < date.today():
-                print("La date est antérieure à aujourd'hui")
+                print("This date is earlier than today")
                 continue
             return date_obj
         except ValueError:
@@ -282,10 +282,10 @@ def printTask(task):
 
 def sortTask(task, mode):
     """
-    par date (ajout/deadline) (les plus récents en bas/deadline la plus proche en bas)
-    par statut
-    par ordre alphabétique
-    priorité
+    by date (addition/deadline) (most recent at the bottom/closest deadline at the bottom)
+    by status
+    by alphabetical order
+    priority
     """
     if not isinstance(task, list):
         return []
