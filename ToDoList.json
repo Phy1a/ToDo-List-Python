@@ -7,9 +7,8 @@
             "text": "Aller chercher du lait",
             "date": "17-10-2025",
             "deadline": "20-10-2025",
-            "time": 0,
             "priority": 2,
-            "color": "normal"            
+            "color": "normal"
         },
         {
             "id": 2,
@@ -18,7 +17,6 @@
             "text": "Essayer de pas s'endormir en cours d'ethique",
             "date": "18-10-2025",
             "deadline": "23-10-2025",
-            "time": 0,
             "priority": 1,
             "color": "cyan"
         },
@@ -40,7 +38,6 @@
             "text": "Ajouter la fonction du mode suppression",
             "date": "07-11-2025",
             "deadline": "12-12-2025",
-            "time": 0,
             "priority": 3,
             "color": "yellow"
         },
@@ -51,7 +48,6 @@
             "text": "Enregistrer les taches sous forme de dicionnaire avec pour clef l'id",
             "date": "16-11-2025",
             "deadline": null,
-            "time": 0,
             "priority": 2,
             "color": "magenta"
         }

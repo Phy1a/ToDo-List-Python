@@ -49,7 +49,7 @@ class TodoList:
             json.dump(data, f, ensure_ascii=False, indent=4)    # false for emojis (maybe), 4 space for indentation
 
     def add_task(self, *, text: str, theme: str = "default", date= date.today(),
-                 deadline, time: int = 0, priority: int = 0,
+                 deadline, priority: int = 0,
                  color: str = "normal", done: bool = False):
         if deadline != None:
             deadline = deadline.strftime("%d-%m-%Y")
@@ -60,7 +60,6 @@ class TodoList:
             "text": text,
             "date": date.strftime("%d-%m-%Y"),
             "deadline": deadline,
-            "time": time,
             "priority": priority,
             "color": color,
         }
