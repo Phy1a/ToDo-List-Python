@@ -68,13 +68,13 @@ class TodoList:
         self._save()
 
         # Printing
-        print(Fore.GREEN + "Task successfully added to the JSON file as:\n")
+        print(Fore.GREEN + "\nTask successfully added to the JSON file as:")
         printTask(task)
 
     def _edit_task(self, done, task, text ="", theme = "",
-                 deadline= None, priority:int =0,
+                 deadline= "", priority="",
                  color = ""):
-        if (deadline != None):
+        if (deadline != ""):
             deadline = deadline.strftime("%d-%m-%Y")
         if (done != ""):
             task.update({"done": done})
@@ -82,7 +82,7 @@ class TodoList:
             task.update({"theme": theme})
         if (text != ""):
             task.update({"text": text})
-        if (deadline != None):
+        if (deadline != ""):
             task.update({"deadline": deadline})
         if (priority != ""):
             task.update({"priority": priority})
@@ -103,19 +103,42 @@ class TodoList:
         self.tasks = [task for task in self.tasks if task["id"] != task_id]
         self._save()
 
-    def _printSumUpTask(self):
+    def _printSumUpTask(self, task_id: int =None):
         '''This function print the name and id of each task in the ToDoList'''
         task_id_list = []
         if not self.tasks:
             print("No task")
         else:
-            print("----Tasks sum up----\n")
-            for t in self.tasks:
-                color_name = t.get("color", "").lower()
-                color_code = colors.get(color_name, "")
-                task_id_list.append(str(t.get("id", "")))
-                print(color_code + f'Id : {t.get("id","Error")}\nTask : {t.get("text","")}\nDone : {t.get("done","")}\n' + Style.RESET_ALL)
-        return task_id_list
+            if (task_id == None):
+                print("----Tasks sum up----\n")
+                for t in self.tasks:
+                    color_name = t.get("color", "").lower()
+                    color_code = colors.get(color_name, "")
+                    task_id_list.append(str(t.get("id", "")))
+                    print(color_code + f'Id : {t.get("id","Error")}\nTask : {t.get("text","")}\nDone : {t.get("done","")}\n' + Style.RESET_ALL)
+            else:
+                for t in self.tasks:
+                    if(t.get("id", "error") == task_id):
+                        color_name = t.get("color", "").lower()
+                        color_code = colors.get(color_name, "")
+                        task_id_list.append(str(t.get("id", "")))
+                        print(color_code + f'Id : {t.get("id","Error")}\nTask : {t.get("text","")}\nDone : {t.get("done","")}\n' + Style.RESET_ALL)
+                        break
+                print("This task id does not figures in the ToDoList")
+
+
+    def _checkDeadlines(self):
+        task_list = []
+        for task in self.tasks:
+            today =  date.today().strftime("%d-%m-%Y")
+            if (task.get("deadline", "") == today and task.get("done", "") == False):
+                task_list.append(task)
+        if (task_list != []):
+            print(Fore.RED + f"You have {len(task_list)} undoned task(s) planned for today :" + Style.RESET_ALL)
+            for task in task_list:
+                self._printSumUpTask(task["id"])
+                print()
+        
 
 
 #useless ?
@@ -139,7 +162,7 @@ def check_time(val, default=0):
                 print("ce n'est pas une priorité valide")
                 continue
 
-def securedInputInt(message="Please enter un number : ", min=None, max=None, can_be_empty=True):
+def securedInputInt(message="Please enter un number : ", min: int =None, max: int =None, can_be_empty=True):
     ''' This function returns the user selected integer and assure its validity
     Parameters : 
     char * message [In], the message to print to the user, has a default value
@@ -218,12 +241,13 @@ def checkdate(message):
     while True:
         date_str = input(message)
         if date_str == "":
-            break
+            return ""
         try:
-            if datetime.strptime(date_str, "%d-%m-%Y") < datetime.today():
+            #print(date_str, "%d-%m-%Y"), date.today()
+            date_obj = datetime.strptime(date_str, "%d-%m-%Y").date()
+            if date_obj < date.today():
                 print("La date est antérieure à aujourd'hui")
                 continue
-            date_obj = datetime.strptime(date_str, "%d-%m-%Y").date()
             return date_obj
         except ValueError:
             print("Date non valide (jj-mm-yyyy)")
@@ -249,7 +273,7 @@ def printTask(task):
     if (task.get("theme","") != "default"):
         print(color_code + f'Theme : {task.get("theme","")}' + Style.RESET_ALL)
     print(color_code + f'Task created on {task.get("date","")}'  + Style.RESET_ALL)
-    if (task.get("deadline","") != ""):
+    if (task.get("deadline","") != None):
         print(color_code + f'For the : {task.get("deadline","")}' + Style.RESET_ALL)
     if (task.get("priority","") != 0):
         print(color_code + f'Priority level/5 : {task.get("priority","")}' + Style.RESET_ALL)
@@ -314,6 +338,7 @@ def sortTask(task, mode):
 
 def main():
     todo = TodoList("ToDoList.json")
+    todo._checkDeadlines()
     while True:
         print("------------------------")
         mode = securedInputString("To open the list: \nIn read mode, type L \nIn edition mode: type E\nIn delete mode: type S\nTo exit: type Q\n>>> ",['e','l', 's', 'q', 'E', 'L', 'S', 'Q'],False)
@@ -339,7 +364,6 @@ def main():
                         if color.lower() not in colors and color.lower() != "normal":
                             print(f"Color '{color}' unknown, use of 'normal' instead.")
                             color = "normal"
-                        done_in = input("Done ? (y/n) : ").strip().lower()
                         while True:
                             done_in = input("Done ? (y/n) : ").strip().lower()
                             if done_in == "y" or done_in == "n" or done_in == "": # "" => false (by default)
@@ -370,9 +394,9 @@ def main():
                                         text = securedInputString("Task name : ", can_be_empty=True)      # input("Texte de la tache : ").strip()
                                         if(text != ""):
                                             text = text[0].upper() + text[1:]   # uppercase for first letter
-                                        theme = (input("theme (default, school...) : ").strip() or "")
+                                        theme = input("theme (default, school...) : ").strip()
                                         deadline = checkdate("Deadline : ")    #datetime.strptime(deadlinetmp, "%d-%m-%Y")
-                                        priority_val = (securedInputInt("Priorité : ", 0, 5) or "")
+                                        priority_val = securedInputInt("Priorité : ", 0, 5)
                                         if priority_val =="":
                                             priority_val = t.get("priority", "")
                                         color = (input("Color : ").strip() or "")
