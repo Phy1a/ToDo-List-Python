@@ -307,8 +307,45 @@ def sortTask(task, mode):
         return done_tasks + not_done_tasks
     return []
 
-
-
+def filterTasks(tasks, mode, category=None, color=None, priority=None):
+    """
+    filter by 
+        status
+        category
+        color
+        priority
+    """
+    if not isinstance(tasks, list):
+        return []
+    lst = []
+    match mode:
+        case "done":
+            for task in tasks:
+                status = task.get("done", "")
+                if status:
+                    lst.append(task)
+            return lst
+        case "not_done":
+            for task in tasks:
+                status = task.get("done", "")
+                if not status:
+                    lst.append(task)
+            return lst
+        case "category":
+            for task in tasks:
+                if task.get("theme", "") == category:
+                    lst.append(task)
+            return lst
+        case "color":
+            for task in tasks:
+                if task.get("color", "") == color:
+                    lst.append(task)
+            return lst
+        case "priority":
+            for task in tasks:
+                if task.get("priority", "") == priority:
+                    lst.append(task)
+            return lst
 
 
 def main():
@@ -320,7 +357,7 @@ def main():
         match mode.lower():
             case 'e': #edit mode
                 print("------------------------")
-                mode = securedInputString("Add a task : type A\nEdit a task content : type E\nMark a tast done : type M \nGo back to thre vious menu : type Q\n>>> ",['a', 'e', 'm', 'q', 'A', 'E', 'M', 'Q'],False)
+                mode = securedInputString("Add a task : type A\nEdit a task content : type E\nToggle a task status : type M \nGo back to previous menu : type Q\n>>> ",['a', 'e', 'm', 'q', 'A', 'E', 'M', 'Q'],False)
                 print("------------------------\n")
                 match mode.lower():
                     case 'a':
@@ -338,7 +375,7 @@ def main():
                         if color.lower() not in colors and color.lower() != "normal":
                             print(f"Color '{color}' unknown, use of 'normal' instead.")
                             color = "normal"
-                        done_in = input("Done ? (y/n) : ").strip().lower()
+                        #done_in = input("Done ? (y/n) : ").strip().lower()
                         while True:
                             done_in = input("Done ? (y/n) : ").strip().lower()
                             if done_in == "y" or done_in == "n" or done_in == "": # "" => false (by default)
@@ -394,10 +431,10 @@ def main():
                                 print(Fore.RED + "Edition aborted" )
                         else:
                             print("Edition aborted")
-                    case 'm': # mark task done case
+                    case 'm': # toggle status
                         task_id_list = todo._printSumUpTask()
                         if (task_id_list != []):
-                            selected_id = securedInputString("Please enter the id of the task you want to toggle mark as done : ",task_id_list, True)
+                            selected_id = securedInputString("Please enter the id of the task you want to toggle the status : ",task_id_list, True)
                             if selected_id != "":
                                 for t in todo.tasks:
                                     if (str(t.get("id", "")) == selected_id):
@@ -420,6 +457,10 @@ def main():
                                           ["l", "L", "t", "T", "dl", "DL", "a", "A", "d", "D", "p", "P", ""], 
                                           True)
                 print("------------------------\n")
+                filter = securedInputString("Choose a filter (optional):\nWithout filter: type L\nShow tasks marked as done: type D\nShow tasks marked as not done : type U\nFilter by category type C\nFilter by color : type V\nFilter by priority level: type P\n>>> ", 
+                                          ["l", "L", "d", "D", "u", "U", "c", "C", "v", "V", "p", "P", ""], 
+                                          True)
+                print("------------------------\n")
                 if not tasks or tasks == []:
                     print("No task")
                 elif sort != "" or sort.lower() !="l":
@@ -434,12 +475,61 @@ def main():
                             tasks = sortTask(tasks, "statut")
                         case "p":
                             tasks = sortTask(tasks, "priority")
-                    for t in tasks:
-                        printTask(t)
+                if filter != "" or filter.lower !="l":
+                    match filter.lower():
+                        case "d":
+                            tasks = filterTasks(tasks, "done")
+                        case "u":
+                            tasks = filterTasks(tasks, "not_done")
+                        case "c":
+                            # parsing the json to get all existing category
+                            category_lst =[]
+                            for task in todo.tasks:
+                                task_category = task.get("theme", "")
+                                if task_category != "" and task_category not in category_lst:
+                                    category_lst.append(task_category)
+                            # showing these categories to the user
+                            print("Select a category :")
+                            for category in category_lst:
+                                print(category, end=', ')
+                            print()
+                            category_wanted = input("")
+                            while category_wanted not in category_lst:
+                                print("Not an existing category. Try again :")
+                                category_wanted = input("")
+                            # filter the tasks
+                            tasks = filterTasks(tasks, "category", category=category_wanted)
+                        case "v":
+                            # parsing the json to get all existing colors
+                            color_lst =[]
+                            for task in todo.tasks:
+                                task_color = task.get("color", "")
+                                if task_color != "" and task_color not in color_lst:
+                                    color_lst.append(task_color)
+                            # showing these colors to the user
+                            print("Select a color :")
+                            for color in color_lst:
+                                print(color, end=', ')
+                            print()
+                            color_wanted = input("")
+                            while color_wanted not in color_lst:
+                                print("Not an existing color. Try again :")
+                                color_wanted = input("")
+                            # filter the tasks
+                            tasks = filterTasks(tasks, "color", color=color_wanted)
+                        case "p":
+                            while True:
+                                priority_wanted = int(input("Select a priority level (0<=priority<=5) :\n"))
+                                if priority_wanted < 0 or priority_wanted > 5:
+                                    continue
+                                break
+                            tasks = filterTasks(tasks, "priority", priority=priority_wanted)
+                #print("id | done | theme | text | date | deadline | priority | color")
+                if not tasks or tasks == []:
+                    print("No task")
                 else:
-                    #print("id | done | theme | text | date | deadline | priority | color")
                     for t in tasks:
-                        printTask(t)
+                        printTask(t)           
             case 's': # mode == s
                 task_id_list = todo._printSumUpTask()
                 if (task_id_list != []):
