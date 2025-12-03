@@ -51,7 +51,7 @@ class TodoList:
     def add_task(self, *, text: str, theme: str = "default", date= date.today(),
                  deadline, time: int = 0, priority: int = 0,
                  color: str = "normal", done: bool = False):
-        if deadline != None:
+        if deadline != "":
             deadline = deadline.strftime("%d-%m-%Y")
         task = {
             "id" : len(self.tasks)+ 1, # unique id at a given time
@@ -123,19 +123,30 @@ class TodoList:
                         color_code = colors.get(color_name, "")
                         task_id_list.append(str(t.get("id", "")))
                         print(color_code + f'Id : {t.get("id","Error")}\nTask : {t.get("text","")}\nDone : {t.get("done","")}\n' + Style.RESET_ALL)
-                        break
-                print("This task id does not figures in the ToDoList")
-
+                        return
+                print(f"This task id does not figures in the ToDoList : {t.get("id", "error")}")
 
     def _checkDeadlines(self):
-        task_list = []
+        task_list_today = []
+        task_list_past = []
+        today =  date.today().strftime("%Y-%m-%d")
         for task in self.tasks:
-            today =  date.today().strftime("%d-%m-%Y")
-            if (task.get("deadline", "") == today and task.get("done", "") == False):
-                task_list.append(task)
-        if (task_list != []):
-            print(Fore.RED + f"You have {len(task_list)} undoned task(s) planned for today :" + Style.RESET_ALL)
-            for task in task_list:
+            deadline = task.get("deadline", "")
+            if (task.get("done", "") != True):
+                if (deadline != ""):
+                    deadline = deadline[6:] + deadline[2:6] + deadline[0:2]
+                    if (deadline == today):
+                        task_list_today.append(task)
+                    elif (deadline < today):
+                        task_list_past.append(task)
+        if (task_list_past != []):
+            print(Fore.RED + f"You have {len(task_list_past)} undone task(s) planned past the deadline :\n" + Style.RESET_ALL)
+            for task in task_list_past:
+                self._printSumUpTask(task["id"])
+                print()
+        if (task_list_today != []):
+            print(Fore.RED + f"You have {len(task_list_today)} undone task(s) planned for today :\n" + Style.RESET_ALL)
+            for task in task_list_today:
                 self._printSumUpTask(task["id"])
                 print()
         
@@ -273,7 +284,7 @@ def printTask(task):
     if (task.get("theme","") != "default"):
         print(color_code + f'Theme : {task.get("theme","")}' + Style.RESET_ALL)
     print(color_code + f'Task created on {task.get("date","")}'  + Style.RESET_ALL)
-    if (task.get("deadline","") != None):
+    if (task.get("deadline","") != ""):
         print(color_code + f'For the : {task.get("deadline","")}' + Style.RESET_ALL)
     if (task.get("priority","") != 0):
         print(color_code + f'Priority level/5 : {task.get("priority","")}' + Style.RESET_ALL)
@@ -346,7 +357,7 @@ def main():
         match mode.lower():
             case 'e': #edit mode
                 print("------------------------")
-                mode = securedInputString("Add a task : type A\nEdit a task content : type E\nMark a tast done : type M \nGo back to thre vious menu : type Q\n>>> ",['a', 'e', 'm', 'q', 'A', 'E', 'M', 'Q'],False)
+                mode = securedInputString("Add a task : type A\nEdit a task content : type E\nToggle mark a tast done : type M \nGo back to thre vious menu : type Q\n>>> ",['a', 'e', 'm', 'q', 'A', 'E', 'M', 'Q'],False)
                 print("------------------------\n")
                 match mode.lower():
                     case 'a':

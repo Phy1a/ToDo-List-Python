@@ -2,7 +2,7 @@
     "tasks": [
         {
             "id": 1,
-            "done": true,
+            "done": false,
             "theme": "default",
             "text": "Aller chercher du lait",
             "date": "17-10-2025",
@@ -50,7 +50,7 @@
             "theme": "python",
             "text": "Enregistrer les taches sous forme de dicionnaire avec pour clef l'id",
             "date": "16-11-2025",
-            "deadline": null,
+            "deadline": "",
             "time": 0,
             "priority": 2,
             "color": "magenta"
