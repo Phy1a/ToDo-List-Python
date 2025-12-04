@@ -284,7 +284,12 @@ def printTask(task):
         print(color_code + f'Theme : {task.get("theme","")}' + Style.RESET_ALL)
     print(color_code + f'Task created on {task.get("date","")}'  + Style.RESET_ALL)
     if (task.get("deadline","") != ""):
-        print(color_code + f'For the : {task.get("deadline","")}' + Style.RESET_ALL)
+        today = date.today()
+        date_obj = datetime.strptime(task.get("deadline"), "%d-%m-%Y").date()
+        if date_obj <= today:
+            print("\033[41m" + color_code + f'For the : {task.get("deadline","")}' + "\033[0m" + Style.RESET_ALL)
+        else:
+            print(color_code + f'For the : {task.get("deadline","")}' + Style.RESET_ALL)
     if (task.get("priority","") != 0):
         print(color_code + f'Priority level/5 : {task.get("priority","")}' + Style.RESET_ALL)
     print()
