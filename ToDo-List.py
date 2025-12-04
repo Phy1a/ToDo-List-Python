@@ -21,11 +21,19 @@ class TodoList:
     def __init__(self, file_path: str = "ToDoList.json"):
         self.file_path = file_path
         self.tasks = []
+        self.tasks_by_id = {}
         self._load()
+
+    def _reindex(self):
+        """
+        (re)build self.tasks_by_id
+        """
+        self.tasks_by_id = {t["id"]: t for t in self.tasks}
 
     def _load(self):
         if not os.path.exists(self.file_path):
             self.tasks = []
+            self._reindex()
             return
         try:
             with open(self.file_path, "r", encoding="utf-8") as f:      # can create many todoLists as we want
@@ -34,10 +42,12 @@ class TodoList:
             # data = dict = {tasks: [{task1}, {task2}]}
             self.tasks = data.get("tasks", []) if isinstance(data, dict) else [] # if dict, get the value (the tasks with metadata) of "tasks" key 
             # self.tasks = lst = [{task1}, {task2}]
-            self.tasks_by_id = {task["id"]: task for task in data["tasks"]}
 
+            #self.tasks_by_id = {task["id"]: task for task in data["tasks"]}
+            self._reindex()
         except (json.JSONDecodeError, OSError):         # decode or read error
             self.tasks = []
+            self.tasks_by_id = {}
 
 
     
@@ -64,6 +74,7 @@ class TodoList:
             "color": color,
         }
         self.tasks.append(task)
+        self._reindex()
         self._save()
 
         # Printing
@@ -87,7 +98,7 @@ class TodoList:
             task.update({"priority": priority})
         if (color != ""):
             task.update({"color": color})
-        
+        self._reindex()
         self._save()
 
         # Printing
@@ -100,6 +111,7 @@ class TodoList:
     def delete_task(self, task_id):
         # keep all the task exept the selected one
         self.tasks = [task for task in self.tasks if task["id"] != task_id]
+        self._reindex()
         self._save()
 
     def _printSumUpTask(self, task_id: int =None):
