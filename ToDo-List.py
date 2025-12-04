@@ -128,15 +128,15 @@ class TodoList:
     def _checkDeadlines(self):
         task_list_today = []
         task_list_past = []
-        today =  date.today().strftime("%Y-%m-%d")
+        today =  date.today()
         for task in self.tasks:
             deadline = task.get("deadline", "")
             if (task.get("done", "") != True):
                 if (deadline != ""):
-                    deadline = deadline[6:] + deadline[2:6] + deadline[0:2]
-                    if (deadline == today):
+                    deadline_date = datetime.strptime(deadline, "%d-%m-%Y").date()
+                    if (deadline_date == today):
                         task_list_today.append(task)
-                    elif (deadline < today):
+                    elif (deadline_date < today):
                         task_list_past.append(task)
         if (task_list_past != []):
             print(Fore.RED + f"You have {len(task_list_past)} undone task(s) planned past the deadline :\n" + Style.RESET_ALL)
