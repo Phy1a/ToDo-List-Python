@@ -392,6 +392,7 @@ def main():
     todo = TodoList("ToDoList.json")
     todo._checkDeadlines()
     while True:
+        #print("\033[2J\033[H", end="")
         print("------------------------")
         mode = securedInputString("To open the list: \nIn read mode, type L \nIn edition mode: type E\nIn delete mode: type S\nTo exit: type Q\n>>> ",['e','l', 's', 'q', 'E', 'L', 'S', 'Q'],False)
         print("------------------------\n")
@@ -402,6 +403,7 @@ def main():
                 print("------------------------\n")
                 match mode.lower():
                     case 'a':
+                        print("\033[2J\033[H", end="")
                         print("Task addition")
                         #text = voidstr("Texte de la tache : ").strip()      # input("Texte de la tache : ").strip()
                         text = securedInputString("Task name : ", can_be_empty=False)      # input("Texte de la tache : ").strip()
@@ -425,6 +427,7 @@ def main():
                         if priority_val =="":
                             priority_val = 0
                         
+                        print("\033[2J\033[H", end="")
                         todo.add_task(
                             text=text,
                             theme=theme,
@@ -433,11 +436,12 @@ def main():
                             color=color,
                             done=done
                         )
-                        print("task added to the json")
+                        # print("task added to the json")
                     case 'e': # full edit case
                         task_id_list = todo._printSumUpTask()
-                        if (task_id_list != []):
+                        if (task_id_list == None and todo.tasks != []):
                             selected_id = securedInputString("Please enter the id of the task you want to edit : ",task_id_list, True)
+                            print("\033[2J\033[H", end="")
                             if selected_id != "":
                                 for t in todo.tasks:
                                     if (str(t.get("id", "")) == selected_id):
@@ -460,6 +464,7 @@ def main():
                                             if done_in == "y" or done_in == "n" or done_in == "":
                                                 break
                                         done = done_in == "y"
+                                        print("\033[2J\033[H", end="")
                                         todo._edit_task(task=t,
                                                         text=text,
                                                         theme=theme,
@@ -473,11 +478,13 @@ def main():
                             print("Edition aborted")
                     case 'm': # toggle status
                         task_id_list = todo._printSumUpTask()
-                        if (task_id_list != []):
+                        if (task_id_list == None and todo.tasks != []):
                             selected_id = securedInputString("Please enter the id of the task you want to toggle the status : ",task_id_list, True)
+                            print("\033[2J\033[H", end="")
                             if selected_id != "":
                                 for t in todo.tasks:
                                     if (str(t.get("id", "")) == selected_id):
+                                        print("\033[2J\033[H", end="")
                                         if(t.get("done", "")==True):
                                             todo._edit_task(task=t,done=False)
                                         else:
@@ -487,6 +494,7 @@ def main():
                         else:
                             print("Operation aborted")
                     case 'q':
+                        print("\033[2J\033[H", end="")
                         continue
                     case default:
                         continue
@@ -500,10 +508,9 @@ def main():
                 filter = securedInputString("Choose a filter (optional):\nWithout filter: type L\nShow tasks marked as done: type D\nShow tasks marked as not done : type U\nFilter by category type C\nFilter by color : type V\nFilter by priority level: type P\n>>> ", 
                                           ["l", "L", "d", "D", "u", "U", "c", "C", "v", "V", "p", "P", ""], 
                                           True)
+                print("\033[2J\033[H", end="")
                 print("------------------------\n")
-                if not tasks or tasks == []:
-                    print("No task")
-                elif sort != "" or sort.lower() !="l":
+                if sort != "" or sort.lower() !="l":
                     match sort.lower():
                         case "t":
                             tasks = sortTask(tasks, "date_added")
@@ -572,17 +579,20 @@ def main():
                         printTask(t)           
             case 's': # mode == s
                 task_id_list = todo._printSumUpTask()
-                if (task_id_list != []):
+                if (task_id_list == None and todo.tasks != []):
                     selected_id = securedInputString("Please enter the id of the task you want to delete : ",task_id_list, True)
                     if selected_id != "":
+                        print("\033[2J\033[H", end="")
                         todo.delete_task(int(selected_id))
                         print(Fore.GREEN + f"Task n°{selected_id} successfully deleted")
                     else:
+                        print("\033[2J\033[H", end="")
                         print(Fore.RED + "Deletion aborted" )
             case 'q': # mode == q, to quit
                 break
             case default:
                 break
+        #print("\033[2J\033[H", end="")
 
 
 if __name__ == "__main__":
