@@ -440,7 +440,10 @@ def main():
                     case 'e': # full edit case
                         task_id_list = todo._printSumUpTask()
                         if (task_id_list == None and todo.tasks != []):
-                            selected_id = securedInputString("Please enter the id of the task you want to edit : ",task_id_list, True)
+                            while True:
+                                selected_id = securedInputString("Please enter the id of the task you want to edit : ",task_id_list, True)
+                                if int(selected_id) in todo.tasks_by_id.keys():
+                                    break
                             print("\033[2J\033[H", end="")
                             if selected_id != "":
                                 for t in todo.tasks:
@@ -479,7 +482,10 @@ def main():
                     case 'm': # toggle status
                         task_id_list = todo._printSumUpTask()
                         if (task_id_list == None and todo.tasks != []):
-                            selected_id = securedInputString("Please enter the id of the task you want to toggle the status : ",task_id_list, True)
+                            while True:
+                                selected_id = securedInputString("Please enter the id of the task you want to edit : ",task_id_list, True)
+                                if int(selected_id) in todo.tasks_by_id.keys():
+                                    break                            
                             print("\033[2J\033[H", end="")
                             if selected_id != "":
                                 for t in todo.tasks:
@@ -580,7 +586,10 @@ def main():
             case 's': # mode == s
                 task_id_list = todo._printSumUpTask()
                 if (task_id_list == None and todo.tasks != []):
-                    selected_id = securedInputString("Please enter the id of the task you want to delete : ",task_id_list, True)
+                    while True:
+                        selected_id = securedInputString("Please enter the id of the task you want to edit : ",task_id_list, True)
+                        if int(selected_id) in todo.tasks_by_id.keys():
+                            break
                     if selected_id != "":
                         print("\033[2J\033[H", end="")
                         todo.delete_task(int(selected_id))
