@@ -135,7 +135,7 @@ class TodoList:
                         task_id_list.append(str(t.get("id", "")))
                         print(color_code + f'Id : {t.get("id","Error")}\nTask : {t.get("text","")}\nDone : {t.get("done","")}\n' + Style.RESET_ALL)
                         return
-                print(f"This task id does not figures in the ToDoList : {t.get("id", "error")}")
+                print(f"This task id does not figures in the ToDoList : {task_id}")
 
     def _checkDeadlines(self):
         task_list_today = []
@@ -416,11 +416,16 @@ def main():
                         task_id_list = todo._printSumUpTask()
                         if (task_id_list == None and todo.tasks != []):
                             while True:
-                                selected_id = securedInputInt("Please enter the id of the task you want to edit : ", can_be_empty=False)
-                                if int(selected_id) in todo.tasks_by_id.keys():
+                                selected_id = securedInputString("Please enter the id of the task you want to edit : ",task_id_list, True)
+                                try:
+                                    if int(selected_id) in todo.tasks_by_id.keys():
+                                        selected_id = int(selected_id)
+                                        break
+                                    else:
+                                        print("This ID is not in the todolist")
+                                except:
+                                    selected_id = ""
                                     break
-                                else:
-                                    print("This ID is not in the todolist")
                             print("\033[2J\033[H", end="")
                             if selected_id != "":
                                 for t in todo.tasks:
@@ -460,11 +465,16 @@ def main():
                         task_id_list = todo._printSumUpTask()
                         if (task_id_list == None and todo.tasks != []):
                             while True:
-                                selected_id = securedInputInt("Please enter the id of the task you want to edit : ", can_be_empty=False)
-                                if int(selected_id) in todo.tasks_by_id.keys():
+                                selected_id = securedInputString("Please enter the id of the task you want to edit : ",task_id_list, True)
+                                try:
+                                    if int(selected_id) in todo.tasks_by_id.keys():
+                                        selected_id = int(selected_id)
+                                        break
+                                    else:
+                                        print("This ID is not in the todolist")
+                                except:
+                                    selected_id = ""
                                     break
-                                else:
-                                    print("This ID is not in the todolist")
                             print("\033[2J\033[H", end="")
                             if selected_id != "":
                                 for t in todo.tasks:
@@ -495,7 +505,7 @@ def main():
                                           True)
                 print("\033[2J\033[H", end="")
                 print("------------------------")
-                if sort != "" or sort.lower() !="l":
+                if sort != "" and sort.lower() !="l":
                     match sort.lower():
                         case "t":
                             tasks = sortTask(tasks, "date_added")
@@ -507,7 +517,7 @@ def main():
                             tasks = sortTask(tasks, "statut")
                         case "p":
                             tasks = sortTask(tasks, "priority")
-                if filter != "" or filter.lower !="l":
+                if filter != "" and filter.lower() !="l":
                     match filter.lower():
                         case "d":
                             tasks = filterTasks(tasks, "done")
@@ -567,10 +577,14 @@ def main():
                 if (task_id_list == None and todo.tasks != []):
                     while True:
                         selected_id = securedInputString("Please enter the id of the task you want to edit : ",task_id_list, True)
-                        if int(selected_id) in todo.tasks_by_id.keys():
+                        try:
+                            if int(selected_id) in todo.tasks_by_id.keys():
+                                break
+                            else:
+                                print("This ID is not in the todolist")
+                        except:
+                            selected_id = ""
                             break
-                        else:
-                            print("This ID is not in the todolist")
                     if selected_id != "":
                         print("\033[2J\033[H", end="")
                         todo.delete_task(int(selected_id))
