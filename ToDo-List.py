@@ -224,12 +224,12 @@ def securedInputString(message="Please enter a message: ", answers_list=None, ca
             if (can_be_empty):
                 return ""
             else:
-                print(f"\nThis answer isn't optional therefore it can't be empty\n")
+                print(Fore.RED + f"\nThis answer isn't optional therefore it can't be empty\n" + Style.RESET_ALL)
                 validity = False
 
         
         if (answers_list != None and result_str not in answers_list):
-            print(f"\nThis answer is invalid, the possible answer are {answers_list}\n")
+            print(Fore.RED + f"\nThis answer is invalid, the possible answer are {answers_list}\n")
             validity = False
  
     return result_str
@@ -490,7 +490,7 @@ def main():
                                           ["l", "L", "d", "D", "u", "U", "c", "C", "v", "V", "p", "P", ""], 
                                           True)
                 print("\033[2J\033[H", end="")
-                print("------------------------\n")
+                print("------------------------")
                 if sort != "" or sort.lower() !="l":
                     match sort.lower():
                         case "t":
