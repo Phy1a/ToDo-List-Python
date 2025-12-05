@@ -213,7 +213,7 @@ def securedInputInt(message="Please enter un number : ", min: int =None, max: in
             if (max != None and result > max):
                 print("The maximum accepted value is ", max)
                 validity = False
-        except:
+        except Exception:
             print("Please enter a number.")
             validity = False    
     return result
@@ -317,14 +317,17 @@ def sortTask(task, mode):
         return sorted(task, key=parse_tasks)
     elif mode == "deadline":
         def key_deadline(t):
-            today = datetime.today().date()
-            s = t.get("deadline", "") or ""
+            s = (t.get("deadline", "") or "").strip()
+            if not s:
+                # no deadline are placed before tasks with deadlines :
+                return (0, datetime.min)
             try:
                 d = datetime.strptime(s, "%d-%m-%Y").date()
             except Exception:
-                return (0, 0)
-            distance = abs((d - today).days)
-            return (1, -distance, d.toordinal())
+                # invalid deadline format are treated as tasks without deadline :
+                return (0, datetime.min)
+            # from soonest to farthest deadlines :
+            return (1, d)
         return sorted(task, key=key_deadline)
     elif mode == "statut":
         done_tasks = []
@@ -434,7 +437,7 @@ def main():
                                         break
                                     else:
                                         print("This ID is not in the todolist")
-                                except:
+                                except Exception:
                                     selected_id = ""
                                     break
                             print("\033[2J\033[H", end="")
@@ -483,7 +486,7 @@ def main():
                                         break
                                     else:
                                         print("This ID is not in the todolist")
-                                except:
+                                except Exception:
                                     selected_id = ""
                                     break
                             print("\033[2J\033[H", end="")
@@ -593,7 +596,7 @@ def main():
                                 break
                             else:
                                 print("This ID is not in the todolist")
-                        except:
+                        except Exception:
                             selected_id = ""
                             break
                     if selected_id != "":
