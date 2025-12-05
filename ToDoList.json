@@ -8,11 +8,11 @@
             "date": "17-10-2025",
             "deadline": "20-10-2025",
             "priority": 2,
-            "color": "normal"            
+            "color": "normal"
         },
         {
             "id": 2,
-            "done": false,
+            "done": true,
             "theme": "school",
             "text": "Essayer de pas s'endormir en cours d'ethique",
             "date": "18-10-2025",

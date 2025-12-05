@@ -162,17 +162,6 @@ class TodoList:
                 print()
         
 
-
-#useless ?
-def check_priority(val, default=0):
-    while True:
-        if 0 <= int(val) <= 5:
-            try:
-                return int(val)
-            except (TypeError, ValueError):
-                print("This is not a valid priority")
-                continue
-
 def check_time(val, default=0):
     pass
 
@@ -246,16 +235,6 @@ def securedInputString(message="Please enter a message: ", answers_list=None, ca
     return result_str
 
 
-# Useless now
-def voidstr(message):
-    str = input(message)
-    while True:
-        if str=="":
-            print("Please enter a task")
-            str = input(message)
-        else:
-            return str
-
 def checkdate(message):
     '''This fonction checks that the input message matchs the date format dd-mm-yyyy or None if nothing is entered
     Parameter : str[] message
@@ -274,18 +253,6 @@ def checkdate(message):
         except ValueError:
             print("Date non valide (jj-mm-yyyy)")
 
-#Useless
-def getMode():
-    ''' This function returns the user selected mode and assure its validity
-    Parameters : None
-    Return : char mode, the mode selected by the user'''
-    while True:
-        # mode = input("Pour ouvrir la liste : \nEn mode lecture, tapez L \nEn mode ajout : tapez A\n").lower()
-        print("------------------------")
-        mode = input("Pour ouvrir la liste : \nEn mode lecture, tapez L \nEn mode ajout : tapez A\nEn mode suppression: tapez S\nPour quitter: tapez Q\n>>> ").strip().lower()
-        print("------------------------\n")
-        if mode in ("a", "l", "s", 'q'):
-            return mode
 
 def printTask(task):
     color_name = task.get("color", "").lower()
@@ -417,14 +384,10 @@ def main():
                     case 'a':
                         print("\033[2J\033[H", end="")
                         print("Task addition")
-                        #text = voidstr("Texte de la tache : ").strip()      # input("Texte de la tache : ").strip()
                         text = securedInputString("Task name : ", can_be_empty=False)      # input("Texte de la tache : ").strip()
                         text = text[0].upper() + text[1:]   # uppercase for first letter
                         theme = (input("theme (default, school...) : ").strip() or "default")
-                        #today = date.today().strftime("%d-%m-%Y")   # DD-MM-YYYY          #input("Date d'ajout : ").strip()
-                        #deadlinetmp = input("Deadline : ").strip()
-                        deadline = checkdate("Deadline : ")      # %d-%m-%Y or None
-                        # time_val = check_time(input("Temps estimé : ").strip(), default=0)
+                        deadline = checkdate("Deadline : ")      # %d-%m-%Y or ""
                         priority_val = securedInputInt("Priorité : ", 0, 5)
                         color = (input("Color : ").strip() or "normal")
                         if color.lower() not in colors and color.lower() != "normal":
@@ -618,17 +581,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-
-
-# else:
-#         csv_reader = csv.reader(file, delimiter=',')
-#         for line in csv_reader:
-#             if line_count == 0:
-#                 print(f'Column names are {", ".join(line)}')
-#                 line_count += 1
-#             else:
-#                 print(f'{line[0]} |{line[1]} |{line[2]} |{line[3]} |{line[4]} |{line[5]} |{line[6]}')
-#                 line_count += 1
-            # print(line, end="")  # end="" évite les doubles sauts de ligne
-#file.close
