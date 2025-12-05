@@ -416,13 +416,15 @@ def main():
                         task_id_list = todo._printSumUpTask()
                         if (task_id_list == None and todo.tasks != []):
                             while True:
-                                selected_id = securedInputString("Please enter the id of the task you want to edit : ",task_id_list, True)
+                                selected_id = securedInputInt("Please enter the id of the task you want to edit : ", can_be_empty=False)
                                 if int(selected_id) in todo.tasks_by_id.keys():
                                     break
+                                else:
+                                    print("This ID is not in the todolist")
                             print("\033[2J\033[H", end="")
                             if selected_id != "":
                                 for t in todo.tasks:
-                                    if (str(t.get("id", "")) == selected_id):
+                                    if (int(t.get("id", "")) == selected_id):
                                         printTask(t)
                                         print("\nTo not modify the champ, just press enter\n")
                                         text = securedInputString("Task name : ", can_be_empty=True)      # input("Texte de la tache : ").strip()
@@ -567,6 +569,8 @@ def main():
                         selected_id = securedInputString("Please enter the id of the task you want to edit : ",task_id_list, True)
                         if int(selected_id) in todo.tasks_by_id.keys():
                             break
+                        else:
+                            print("This ID is not in the todolist")
                     if selected_id != "":
                         print("\033[2J\033[H", end="")
                         todo.delete_task(int(selected_id))
