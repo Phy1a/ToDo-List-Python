@@ -510,13 +510,19 @@ def main():
             case 'l': #L
                 # work in progress
                 tasks = todo.list_tasks() #=lst
-                sort = securedInputString("Choose a sort (optional):\nWithout sort: type L\nSort by task added date: type T\nSort by deadline: type DL\nSort alphabetically: type A\nSort by Done status: type D\nSort by priority: type P\n>>> ", 
-                                          ["l", "L", "t", "T", "dl", "DL", "a", "A", "d", "D", "p", "P", ""], 
+                sort = securedInputString("Choose a sort (optional):\nWithout sort: type L\nSort by task added date: type T\nSort by deadline: type DL\nSort alphabetically: type A\nSort by Done status: type D\nSort by priority: type P\nGo to main menu: type Q\n>>> ", 
+                                          ["l", "L", "t", "T", "dl", "DL", "a", "A", "d", "D", "p", "P", "", "q"], 
                                           True)
+                if sort.lower() == "q":
+                    print("\033[2J\033[H", end="")
+                    continue
                 print("------------------------\n")
-                filter = securedInputString("Choose a filter (optional):\nWithout filter: type L\nShow tasks marked as done: type D\nShow tasks marked as not done : type U\nFilter by category type C\nFilter by color : type V\nFilter by priority level: type P\n>>> ", 
-                                          ["l", "L", "d", "D", "u", "U", "c", "C", "v", "V", "p", "P", ""], 
+                filter = securedInputString("Choose a filter (optional):\nWithout filter: type L\nShow tasks marked as done: type D\nShow tasks marked as not done : type U\nFilter by category type C\nFilter by color : type V\nFilter by priority level: type P\nGo to main menu: type Q\n>>> ", 
+                                          ["l", "L", "d", "D", "u", "U", "c", "C", "v", "V", "p", "P", "", "q"], 
                                           True)
+                if filter.lower() == "q":
+                    print("\033[2J\033[H", end="")
+                    continue
                 print("\033[2J\033[H", end="")
                 print("------------------------")
                 if sort != "" and sort.lower() !="l":
