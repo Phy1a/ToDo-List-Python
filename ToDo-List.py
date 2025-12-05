@@ -265,7 +265,7 @@ def printTask(task):
     if (task.get("deadline","") != ""):
         today = date.today()
         date_obj = datetime.strptime(task.get("deadline"), "%d-%m-%Y").date()
-        if date_obj <= today:
+        if date_obj <= today and task.get("done") is False:
             print("\033[41m" + color_code + f'For the : {task.get("deadline","")}' + "\033[0m" + Style.RESET_ALL)
         else:
             print(color_code + f'For the : {task.get("deadline","")}' + Style.RESET_ALL)
@@ -458,13 +458,15 @@ def main():
                         task_id_list = todo._printSumUpTask()
                         if (task_id_list == None and todo.tasks != []):
                             while True:
-                                selected_id = securedInputString("Please enter the id of the task you want to edit : ",task_id_list, True)
+                                selected_id = securedInputInt("Please enter the id of the task you want to edit : ", can_be_empty=False)
                                 if int(selected_id) in todo.tasks_by_id.keys():
-                                    break                            
+                                    break
+                                else:
+                                    print("This ID is not in the todolist")
                             print("\033[2J\033[H", end="")
                             if selected_id != "":
                                 for t in todo.tasks:
-                                    if (str(t.get("id", "")) == selected_id):
+                                    if (int(t.get("id", "")) == selected_id):
                                         print("\033[2J\033[H", end="")
                                         if(t.get("done", "")==True):
                                             todo._edit_task(task=t,done=False)
