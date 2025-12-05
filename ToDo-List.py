@@ -63,8 +63,14 @@ class TodoList:
                  color: str = "normal", done: bool = False):
         if deadline != "":
             deadline = deadline.strftime("%d-%m-%Y")
-        task = {
-            "id" : len(self.tasks)+ 1, # unique id at a given time
+        # checking that the id doesn't already exist in the JSON :
+        id_count = 1
+        for task in self.tasks:
+            id = int(task.get("id"))
+            if id==id_count:
+                id_count+=1
+        new_task = {
+            "id" : id_count, # unique id at a given time
             "done": done,
             "theme": theme,
             "text": text,
@@ -73,13 +79,18 @@ class TodoList:
             "priority": priority,
             "color": color,
         }
-        self.tasks.append(task)
+        # inserting at the correct index in the JSON (id)
+        for idx, task in enumerate(self.tasks):
+            if new_task["id"] < task["id"]:
+                self.tasks.insert(idx, new_task)
+                break
+        else:
+            self.tasks.append(new_task)
         self._reindex()
         self._save()
-
         # Printing
         print(Fore.GREEN + "\nTask successfully added to the JSON file as:")
-        printTask(task)
+        printTask(new_task)
 
     def _edit_task(self, done, task, text ="", theme = "",
                  deadline= "", priority="",
