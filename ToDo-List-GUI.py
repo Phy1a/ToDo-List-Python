@@ -64,7 +64,7 @@ class TodoListGUI:
         title_frame.pack(fill=tk.X, side=tk.TOP)
         title_frame.pack_propagate(False)
         
-        title_label = tk.Label(title_frame, text="📋 Gestionnaire de Tâches", 
+        title_label = tk.Label(title_frame, text="📋 Gestionnaire de tâches", 
                               font=("Arial", 20, "bold"), 
                               bg="#2c3e50", fg="white")
         title_label.pack(pady=15)
@@ -129,31 +129,18 @@ class TodoListGUI:
         filters = [
             ("Toutes", "all"),
             ("Non terminées", "not_done"),
-            ("Terminées", "done")
+            ("Terminées", "done"),
+            ("Par catégorie", "category"),
+            ("Par couleur", "color"),
+            ("Par priorité", "priority")
         ]
         
         for text, value in filters:
             rb = tk.Radiobutton(filter_frame, text=text, 
                                variable=self.filter_var, value=value,
                                bg="#f0f0f0", font=("Arial", 9),
-                               command=self.apply_filter_sort)
+                               command=lambda v=value: self.on_filter_change(v))
             rb.pack(anchor=tk.W, padx=5, pady=2)
-        
-        # boutons de filtres
-        tk.Button(filter_frame, text="Par catégorie", 
-                 command=self.filter_by_category_window,
-                 bg="#95a5a6", fg="white", font=("Arial", 8),
-                 relief=tk.FLAT, padx=5, pady=3).pack(fill=tk.X, padx=5, pady=2)
-        
-        tk.Button(filter_frame, text="Par couleur", 
-                 command=self.filter_by_color_window,
-                 bg="#95a5a6", fg="white", font=("Arial", 8),
-                 relief=tk.FLAT, padx=5, pady=3).pack(fill=tk.X, padx=5, pady=2)
-        
-        tk.Button(filter_frame, text="Par priorité", 
-                 command=self.filter_by_priority_window,
-                 bg="#95a5a6", fg="white", font=("Arial", 8),
-                 relief=tk.FLAT, padx=5, pady=3).pack(fill=tk.X, padx=5, pady=2)
         
         # boutons de tri
         sort_frame = tk.LabelFrame(left_frame, text="Trier par", 
@@ -312,6 +299,18 @@ class TodoListGUI:
             priority = task.get("priority", 0)
             self.task_display.insert(tk.END, f"Priorité: {priority}/5\n", color)
     
+    def on_filter_change(self, filter_value):
+        """gère le changement de filtre et ouvre les fenêtres de sélection si nécessaire"""
+        if filter_value == "category":
+            self.filter_by_category_window()
+        elif filter_value == "color":
+            self.filter_by_color_window()
+        elif filter_value == "priority":
+            self.filter_by_priority_window()
+        else:
+            # pour terminées/non terminées 
+            self.apply_filter_sort()
+    
     def apply_filter_sort(self):
         """applique les filtres + tris sélectionnés"""
         tasks = list(self.tasks)
@@ -353,34 +352,39 @@ class TodoListGUI:
         categories = list(set(t.get("theme", "") for t in self.tasks if t.get("theme")))
         if not categories:
             messagebox.showinfo("Info", "Aucune catégorie disponible")
+            self.filter_var.set("all")  # si annulé, revenir au filtre "toutes"
             return
         
         category = self._select_from_list("Choisir une catégorie", categories)
         if category:
             self.active_filter_params["category"] = category
-            self.filter_var.set("category")
             self.apply_filter_sort()
+        else:
+            self.filter_var.set("all")  
     
     def filter_by_color_window(self):
         """ouvre une fenêtre pour filtrer par couleur"""
         colors = list(set(t.get("color", "") for t in self.tasks if t.get("color")))
         if not colors:
             messagebox.showinfo("Info", "Aucune couleur disponible")
+            self.filter_var.set("all")
             return
         
         color = self._select_from_list("Choisir une couleur", colors)
         if color:
             self.active_filter_params["color"] = color
-            self.filter_var.set("color")
             self.apply_filter_sort()
+        else:
+            self.filter_var.set("all")
     
     def filter_by_priority_window(self):
         """ouvre une fenêtre pour filtrer par priorité"""
         priority = self._ask_priority("Choisir une priorité (0-5)")
         if priority is not None:
             self.active_filter_params["priority"] = priority
-            self.filter_var.set("priority")
             self.apply_filter_sort()
+        else:
+            self.filter_var.set("all")
     
     def _sort_tasks(self, tasks, mode):
         """trie les tâches selon le mode spécifié"""
