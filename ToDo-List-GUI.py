@@ -642,19 +642,25 @@ class TodoListGUI:
             if theme:
                 task["theme"] = theme
             
+            # gestion de la deadline
             deadline_str = fields['deadline'].get().strip()
-            if deadline_str:
-                try:
-                    deadline_date = datetime.strptime(deadline_str, "%d-%m-%Y").date()
-                    if deadline_date < date.today():
-                        messagebox.showerror("Erreur", "La deadline ne peut pas être dans le passé!")
+            original_deadline = task.get("deadline", "")
+            
+            # si la deadline a changé, on vérifie qu'elle n'est pas dans le passé
+            if deadline_str != original_deadline:
+                if deadline_str:
+                    try:
+                        deadline_date = datetime.strptime(deadline_str, "%d-%m-%Y").date()
+                        if deadline_date < date.today():
+                            messagebox.showerror("Erreur", "La nouvelle deadline ne peut pas être dans le passé")
+                            return
+                        task["deadline"] = deadline_str
+                    except ValueError:
+                        messagebox.showerror("Erreur", "Format de date invalide (jj-mm-aaaa)")
                         return
-                    task["deadline"] = deadline_str
-                except ValueError:
-                    messagebox.showerror("Erreur", "Format de date invalide (jj-mm-aaaa)!")
-                    return
-            else:
-                task["deadline"] = ""
+                else:
+                    task["deadline"] = ""
+            # si la deadline n'a pas changé, on la garde (meme si elle est dans le passé)
             
             try:
                 task["priority"] = int(fields['priority'].get())
