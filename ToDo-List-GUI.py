@@ -379,7 +379,7 @@ class TodoListGUI:
     
     def filter_by_priority_window(self):
         """opens a window to filter by priority"""
-        priority = self._ask_priority("Choose a priority (0-5)")
+        priority = self._ask_priority("Choose a priority (1-5)")
         if priority is not None:
             self.active_filter_params["priority"] = priority
             self.apply_filter_sort()
@@ -457,9 +457,9 @@ class TodoListGUI:
         
         row += 1
         # priority
-        tk.Label(window, text="Priority (0-5):", bg="#f0f0f0", 
+        tk.Label(window, text="Priority (1-5):", bg="#f0f0f0", 
                 font=("Arial", 10)).grid(row=row, column=0, sticky=tk.W, padx=10, pady=5)
-        fields['priority'] = tk.Spinbox(window, from_=0, to=5, width=38, font=("Arial", 10))
+        fields['priority'] = tk.Spinbox(window, from_=1, to=5, width=38, font=("Arial", 10))
         fields['priority'].grid(row=row, column=1, padx=10, pady=5)
         
         row += 1
@@ -509,8 +509,12 @@ class TodoListGUI:
             
             try:
                 priority = int(fields['priority'].get())
-            except:
-                priority = 0
+                if priority < 1 or priority > 5:
+                    messagebox.showerror("Error", "Priority must be between 1 and 5!")
+                    return
+            except ValueError:
+                messagebox.showerror("Error", "Priority must be a valid number")
+                return
             
             color = fields['color'].get() or "normal"
             done = fields['done'].get()
@@ -604,9 +608,9 @@ class TodoListGUI:
         
         row += 1
         # priorité
-        tk.Label(window, text="Priorité (0-5):", bg="#f0f0f0", 
+        tk.Label(window, text="Priorité (1-5):", bg="#f0f0f0", 
                 font=("Arial", 10)).grid(row=row, column=0, sticky=tk.W, padx=10, pady=5)
-        fields['priority'] = tk.Spinbox(window, from_=0, to=5, width=38, font=("Arial", 10))
+        fields['priority'] = tk.Spinbox(window, from_=1, to=5, width=38, font=("Arial", 10))
         fields['priority'].delete(0, tk.END)
         fields['priority'].insert(0, str(task.get("priority", 0)))
         fields['priority'].grid(row=row, column=1, padx=10, pady=5)
@@ -663,9 +667,14 @@ class TodoListGUI:
             # if deadline hasn't changed, keep it (even if it's in the past)
             
             try:
-                task["priority"] = int(fields['priority'].get())
-            except:
-                pass
+                priority = int(fields['priority'].get())
+                if priority < 1 or priority > 5:
+                    messagebox.showerror("Error", "Priority must be between 1 and 5")
+                    return
+                task["priority"] = priority
+            except ValueError:
+                messagebox.showerror("Error", "Priority must be a valid number")
+                return
             
             color = fields['color'].get()
             if color:
@@ -826,7 +835,7 @@ class TodoListGUI:
         tk.Label(window, text=title, 
                 bg="#f0f0f0", font=("Arial", 12, "bold")).pack(pady=10)
         
-        spinbox = tk.Spinbox(window, from_=0, to=5, font=("Arial", 14), width=10)
+        spinbox = tk.Spinbox(window, from_=1, to=5, font=("Arial", 14), width=10)
         spinbox.pack(pady=10)
         
         result: list[Optional[int]] = [None]
