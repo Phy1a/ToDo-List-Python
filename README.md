@@ -1,5 +1,5 @@
 <h1 align='center'>
-    ToDo-List-Python
+    ⏳ ToDo-List-Python ✅
 </h1>
 
 <p align='center'>
@@ -10,13 +10,13 @@
 </p>
 
 <p align='center'>
-    Command-line to-do list in Python with persistent storage.
+    A Command-Line Interface to-do list in Python with persistent storage.
 </p>
 
 
 ## Introduction
 
-This Python script is a command-line task management tool (more commonly known as a "to-do list").<br>
+This Python script is a Command-Line Interface task management tool (more commonly known as a "to-do list").<br>
 The user can add tasks, specifying text, category, due date, priority level, color, and status (to do/done).<br>
 The user can view their tasks and see all associated data.<br>
 The user can also modify one or more details of a task, such as its status or category.
@@ -31,7 +31,7 @@ The user can also modify one or more details of a task, such as its status or ca
 
 2. Open your terminal where you cloned the repository
 
-3. Start the TodoList :
+3. Start the to-do list :
     ```
     python ToDo-List.py
     ```
@@ -56,7 +56,9 @@ Cependant, il est possible que quelques erreurs se cachent dans ce programme, pu
 L'essentiel de nos efforts ont été consacré au script initial en ligne de commande, `ToDo-List.py`.
 
 To use the Graphical User Interface :
-1. Start the TodoList's GUI :
+
+1. Start the to-do list's GUI :
+
     ```
     python ToDo-List-GUI.py
     ```
