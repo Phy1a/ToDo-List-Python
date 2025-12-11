@@ -9,7 +9,7 @@ class TodoListGUI:
     def __init__(self, master, file_path: str = "ToDoList.json"):
         self.master = master
         self.master.title("ToDo List Manager")
-        self.master.geometry("1000x700")
+        self.master.geometry("1100x900")
         self.master.configure(bg="#f0f0f0")
         
         self.file_path = file_path
