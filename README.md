@@ -26,7 +26,7 @@ The user can also modify one or more details of a task, such as its status or ca
 
 1. Clone the repository :
     ```
-    git clone https://github.com/raphael950/AgenceVoyage.git
+    git clone https://github.com/Phy1a/ToDo-List-Python.git
     ```
 
 2. Open your terminal where you cloned the repository
