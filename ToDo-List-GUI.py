@@ -1,0 +1,872 @@
+import tkinter as tk
+from tkinter import ttk, messagebox, scrolledtext
+import json
+import os
+from datetime import date, datetime
+from typing import Optional
+
+class TodoListGUI:
+    def __init__(self, master, file_path: str = "ToDoList.json"):
+        self.master = master
+        self.master.title("ToDo List Manager")
+        self.master.geometry("1100x900")
+        self.master.configure(bg="#f0f0f0")
+        
+        self.file_path = file_path
+        self.tasks = []
+        self.tasks_by_id = {}
+        self._load()
+        
+        # color configuration
+        self.colors = {
+            "red": "#FF0000",
+            "green": "#00FF00",
+            "blue": "#0000FF",
+            "yellow": "#FFFF00",
+            "cyan": "#00FFFF",
+            "magenta": "#FF00FF",
+            "black": "#000000",
+            "normal": "#000000"
+        }
+        
+        self.setup_ui()
+        self._check_deadlines()
+        
+    def _load(self):
+        """loads tasks from JSON file"""
+        if not os.path.exists(self.file_path):
+            self.tasks = []
+            self._reindex()
+            return
+        try:
+            with open(self.file_path, "r", encoding="utf-8") as f:
+                data = json.load(f)
+            self.tasks = data.get("tasks", []) if isinstance(data, dict) else []
+            self._reindex()
+        except (json.JSONDecodeError, OSError):
+            self.tasks = []
+            self.tasks_by_id = {}
+    
+    def _reindex(self):
+        """rebuilds task index by ID"""
+        self.tasks_by_id = {t["id"]: t for t in self.tasks}
+    
+    def _save(self):
+        """saves tasks to JSON file"""
+        data = {"tasks": self.tasks}
+        with open(self.file_path, "w", encoding="utf-8") as f:
+            json.dump(data, f, ensure_ascii=False, indent=4)
+    
+    def setup_ui(self):
+        """configures the main user interface"""
+        # title
+        title_frame = tk.Frame(self.master, bg="#2c3e50", height=60)
+        title_frame.pack(fill=tk.X, side=tk.TOP)
+        title_frame.pack_propagate(False)
+        
+        title_label = tk.Label(title_frame, text="📋 Task Manager", 
+                              font=("Arial", 20, "bold"), 
+                              bg="#2c3e50", fg="white")
+        title_label.pack(pady=15)
+        
+        # main window with two columns
+        main_frame = tk.Frame(self.master, bg="#f0f0f0")
+        main_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
+        
+        # left column - control panel
+        left_frame = tk.Frame(main_frame, bg="#f0f0f0", width=250)
+        left_frame.pack(side=tk.LEFT, fill=tk.Y, padx=(0, 10))
+        left_frame.pack_propagate(False)
+        
+        # edition section
+        edit_label = tk.Label(left_frame, text="Edition", 
+                             font=("Arial", 14, "bold"), 
+                             bg="#f0f0f0")
+        edit_label.pack(pady=(10, 5))
+        
+        btn_add = tk.Button(left_frame, text="➕ Add task", 
+                           command=self.add_task_window,
+                           bg="#27ae60", fg="white", 
+                           font=("Arial", 10, "bold"),
+                           relief=tk.FLAT, padx=10, pady=8)
+        btn_add.pack(fill=tk.X, pady=5, padx=10)
+        
+        btn_edit = tk.Button(left_frame, text="✏️ Edit task", 
+                            command=self.edit_task_window,
+                            bg="#3498db", fg="white", 
+                            font=("Arial", 10, "bold"),
+                            relief=tk.FLAT, padx=10, pady=8)
+        btn_edit.pack(fill=tk.X, pady=5, padx=10)
+        
+        btn_toggle = tk.Button(left_frame, text="✓ Toggle status", 
+                              command=self.toggle_task_status,
+                              bg="#9b59b6", fg="white", 
+                              font=("Arial", 10, "bold"),
+                              relief=tk.FLAT, padx=10, pady=8)
+        btn_toggle.pack(fill=tk.X, pady=5, padx=10)
+        
+        btn_delete = tk.Button(left_frame, text="🗑️ Delete task", 
+                              command=self.delete_task_window,
+                              bg="#e74c3c", fg="white", 
+                              font=("Arial", 10, "bold"),
+                              relief=tk.FLAT, padx=10, pady=8)
+        btn_delete.pack(fill=tk.X, pady=5, padx=10)
+        
+        # display section
+        view_label = tk.Label(left_frame, text="Display", 
+                             font=("Arial", 14, "bold"), 
+                             bg="#f0f0f0")
+        view_label.pack(pady=(20, 5))
+        
+        # filters
+        filter_frame = tk.LabelFrame(left_frame, text="Filter by", 
+                                     bg="#f0f0f0", font=("Arial", 10, "bold"))
+        filter_frame.pack(fill=tk.X, pady=5, padx=10)
+        
+        self.filter_var = tk.StringVar(value="all")
+        self.active_filter_params = {}  # store current filter parameters
+        
+        filters = [
+            ("All", "all"),
+            ("Not Done", "not_done"),
+            ("Done", "done"),
+            ("By Category", "category"),
+            ("By Color", "color"),
+            ("By Priority", "priority")
+        ]
+        
+        for text, value in filters:
+            rb = tk.Radiobutton(filter_frame, text=text, 
+                               variable=self.filter_var, value=value,
+                               bg="#f0f0f0", font=("Arial", 9),
+                               command=lambda v=value: self.on_filter_change(v))
+            rb.pack(anchor=tk.W, padx=5, pady=2)
+        
+        # sort buttons
+        sort_frame = tk.LabelFrame(left_frame, text="Sort by", 
+                                   bg="#f0f0f0", font=("Arial", 10, "bold"))
+        sort_frame.pack(fill=tk.X, pady=5, padx=10)
+        
+        self.sort_var = tk.StringVar(value="none")
+        sorts = [
+            ("No Sort", "none"),
+            ("Date Added", "date_added"),
+            ("Deadline", "deadline"),
+            ("Alphabetical", "alphabetically"),
+            ("Status", "statut"),
+            ("Priority", "priority")
+        ]
+        
+        for text, value in sorts:
+            rb = tk.Radiobutton(sort_frame, text=text, 
+                               variable=self.sort_var, value=value,
+                               bg="#f0f0f0", font=("Arial", 9),
+                               command=self.apply_filter_sort)
+            rb.pack(anchor=tk.W, padx=5, pady=2)
+        
+        btn_refresh = tk.Button(left_frame, text="Refresh", 
+                               command=self.refresh_display,
+                               bg="#34495e", fg="white", 
+                               font=("Arial", 10, "bold"),
+                               relief=tk.FLAT, padx=10, pady=8)
+        btn_refresh.pack(fill=tk.X, pady=10, padx=10)
+        
+        # right column - task display
+        right_frame = tk.Frame(main_frame, bg="white")
+        right_frame.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True)
+        
+        # search bar
+        search_frame = tk.Frame(right_frame, bg="white")
+        search_frame.pack(fill=tk.X, padx=5, pady=5)
+        
+        tk.Label(search_frame, text="🔍 Search:", 
+                font=("Arial", 10), bg="white").pack(side=tk.LEFT, padx=5)
+        
+        self.search_var = tk.StringVar()
+        self.search_var.trace('w', lambda *args: self.apply_filter_sort())
+        search_entry = tk.Entry(search_frame, textvariable=self.search_var, 
+                               font=("Arial", 10), width=40)
+        search_entry.pack(side=tk.LEFT, padx=5, fill=tk.X, expand=True)
+        
+        # scrollable text area to display tasks
+        self.task_display = scrolledtext.ScrolledText(right_frame, 
+                                                       wrap=tk.WORD,
+                                                       font=("Consolas", 10),
+                                                       bg="white",
+                                                       relief=tk.FLAT,
+                                                       padx=10, pady=10)
+        self.task_display.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
+        
+        # configure color tags for text
+        for color_name, color_code in self.colors.items():
+            self.task_display.tag_config(color_name, foreground=color_code)
+        
+        self.task_display.tag_config("title", font=("Arial", 11, "bold"))
+        self.task_display.tag_config("urgent", background="#ffcccc")
+        self.task_display.tag_config("done", foreground="#808080", overstrike=True)
+        
+        # initial display
+        self.refresh_display()
+    
+    def _check_deadlines(self):
+        """checks deadlines and displays alerts"""
+        task_list_today = []
+        task_list_past = []
+        today = date.today()
+        
+        for task in self.tasks:
+            deadline = task.get("deadline", "")
+            if not task.get("done", False) and deadline:
+                try:
+                    deadline_date = datetime.strptime(deadline, "%d-%m-%Y").date()
+                    if deadline_date == today:
+                        task_list_today.append(task)
+                    elif deadline_date < today:
+                        task_list_past.append(task)
+                except:
+                    pass
+        
+        if task_list_past or task_list_today:
+            msg = ""
+            if task_list_past:
+                msg += f"⚠️ {len(task_list_past)} overdue task(s):\n"
+                for t in task_list_past:
+                    msg += f"  - {t['text']}\n"
+                msg += "\n"
+            
+            if task_list_today:
+                msg += f"{len(task_list_today)} task(s) due today:\n"
+                for t in task_list_today:
+                    msg += f"  - {t['text']}\n"
+            
+            messagebox.showwarning("Deadline reminder", msg)
+    
+    def display_tasks(self, tasks):
+        """displays tasks in text area"""
+        self.task_display.config(state=tk.NORMAL)
+        self.task_display.delete(1.0, tk.END)
+        
+        if not tasks:
+            self.task_display.insert(tk.END, "No tasks to display.\n", "title")
+        else:
+            for task in tasks:
+                self._display_single_task(task)
+                self.task_display.insert(tk.END, "\n" + "─"*80 + "\n\n")
+        
+        self.task_display.config(state=tk.DISABLED)
+    
+    def _display_single_task(self, task):
+        """displays a single task with formatting"""
+        color = task.get("color", "normal")
+        done = task.get("done", False)
+        
+        # ID and text
+        id_text = f"📌 ID: {task.get('id', 'N/A')} | "
+        self.task_display.insert(tk.END, id_text, color)
+        
+        task_text = f"{task.get('text', '')}\n"
+        if done:
+            self.task_display.insert(tk.END, task_text, ("done", color))
+        else:
+            self.task_display.insert(tk.END, task_text, (color, "title"))
+        
+        # task status
+        status = "✅ Done" if done else "⏳ In progress"
+        self.task_display.insert(tk.END, f"Status: {status}\n", color)
+        
+        # theme
+        if task.get("theme", "") != "default":
+            self.task_display.insert(tk.END, f"📁 Theme: {task.get('theme', '')}\n", color)
+        
+        # creation date
+        self.task_display.insert(tk.END, f"📅 Created on: {task.get('date', '')}\n", color)
+        
+        # deadline
+        if task.get("deadline", ""):
+            today = date.today()
+            try:
+                deadline_date = datetime.strptime(task.get("deadline"), "%d-%m-%Y").date()
+                if deadline_date <= today and not done:
+                    self.task_display.insert(tk.END, f"⚠️ DEADLINE: {task.get('deadline')}\n", 
+                                           ("urgent", color))
+                else:
+                    self.task_display.insert(tk.END, f"⏰ Deadline: {task.get('deadline')}\n", color)
+            except:
+                self.task_display.insert(tk.END, f"⏰ Deadline: {task.get('deadline')}\n", color)
+        
+        # priority
+        if task.get("priority", 0) != 0:
+            priority = task.get("priority", 0)
+            self.task_display.insert(tk.END, f"Priority: {priority}/5\n", color)
+    
+    def on_filter_change(self, filter_value):
+        """handles filter change and opens selection windows if needed"""
+        if filter_value == "category":
+            self.filter_by_category_window()
+        elif filter_value == "color":
+            self.filter_by_color_window()
+        elif filter_value == "priority":
+            self.filter_by_priority_window()
+        else:
+            # for done/not done filters
+            self.apply_filter_sort()
+    
+    def apply_filter_sort(self):
+        """applies selected filters and sorts"""
+        tasks = list(self.tasks)
+        
+        # text search
+        search_text = self.search_var.get().lower()
+        if search_text:
+            tasks = [t for t in tasks if search_text in t.get("text", "").lower()]
+        
+        # filtering
+        filter_mode = self.filter_var.get()
+        tasks = self._apply_filter(tasks, filter_mode)
+        
+        # sorting
+        sort_mode = self.sort_var.get()
+        if sort_mode != "none":
+            tasks = self._sort_tasks(tasks, sort_mode)
+        
+        self.display_tasks(tasks)
+    
+    def _apply_filter(self, tasks, mode):
+        """applies a filter to tasks"""
+        if mode == "all":
+            return tasks
+        elif mode == "done":
+            return [t for t in tasks if t.get("done", False)]
+        elif mode == "not_done":
+            return [t for t in tasks if not t.get("done", False)]
+        elif mode == "category" and "category" in self.active_filter_params:
+            return [t for t in tasks if t.get("theme") == self.active_filter_params["category"]]
+        elif mode == "color" and "color" in self.active_filter_params:
+            return [t for t in tasks if t.get("color") == self.active_filter_params["color"]]
+        elif mode == "priority" and "priority" in self.active_filter_params:
+            return [t for t in tasks if t.get("priority") == self.active_filter_params["priority"]]
+        return tasks
+    
+    def filter_by_category_window(self):
+        """opens a window to filter by category"""
+        categories = list(set(t.get("theme", "") for t in self.tasks if t.get("theme")))
+        if not categories:
+            messagebox.showinfo("Info", "No categories available")
+            self.filter_var.set("all")  # if cancelled, go back to "all" filter
+            return
+        
+        category = self._select_from_list("Choose a category", categories)
+        if category:
+            self.active_filter_params["category"] = category
+            self.apply_filter_sort()
+        else:
+            self.filter_var.set("all")  
+    
+    def filter_by_color_window(self):
+        """opens a window to filter by color"""
+        colors = list(set(t.get("color", "") for t in self.tasks if t.get("color")))
+        if not colors:
+            messagebox.showinfo("Info", "No colors available")
+            self.filter_var.set("all")
+            return
+        
+        color = self._select_from_list("Choose a color", colors)
+        if color:
+            self.active_filter_params["color"] = color
+            self.apply_filter_sort()
+        else:
+            self.filter_var.set("all")
+    
+    def filter_by_priority_window(self):
+        """opens a window to filter by priority"""
+        priority = self._ask_priority("Choose a priority (1-5)")
+        if priority is not None:
+            self.active_filter_params["priority"] = priority
+            self.apply_filter_sort()
+        else:
+            self.filter_var.set("all")
+    
+    def _sort_tasks(self, tasks, mode):
+        """sorts tasks according to specified mode"""
+        if mode == "date_added":
+            return sorted(tasks, key=lambda t: self._parse_date(t.get("date", "")))
+        elif mode == "deadline":
+            def key_deadline(t):
+                s = (t.get("deadline", "") or "").strip()
+                if not s:
+                    return (0, datetime.min)
+                try:
+                    d = datetime.strptime(s, "%d-%m-%Y").date()
+                    return (1, d)
+                except:
+                    return (0, datetime.min)
+            return sorted(tasks, key=key_deadline)
+        elif mode == "alphabetically":
+            return sorted(tasks, key=lambda t: t.get("text", "").lower())
+        elif mode == "statut":
+            done = [t for t in tasks if t.get("done", False)]
+            not_done = [t for t in tasks if not t.get("done", False)]
+            return done + not_done
+        elif mode == "priority":
+            return sorted(tasks, key=lambda t: t.get("priority", 0), reverse=True)
+        return tasks
+    
+    def _parse_date(self, date_str):
+        """parses a date in dd-mm-yyyy format"""
+        try:
+            return datetime.strptime(date_str, "%d-%m-%Y")
+        except:
+            return datetime.max
+    
+    def refresh_display(self):
+        """refreshes the display"""
+        self._load()
+        self.apply_filter_sort()
+    
+    def add_task_window(self):
+        """window to add a task"""
+        window = tk.Toplevel(self.master)
+        window.title("Add task")
+        window.geometry("500x550")
+        window.configure(bg="#f0f0f0")
+        
+        # form fields for task addition
+        fields = {}
+        
+        row = 0
+        # task text (required)
+        tk.Label(window, text="* Task name:", bg="#f0f0f0", 
+                font=("Arial", 10, "bold")).grid(row=row, column=0, sticky=tk.W, padx=10, pady=5)
+        fields['text'] = tk.Entry(window, width=40, font=("Arial", 10))
+        fields['text'].grid(row=row, column=1, padx=10, pady=5)
+        
+        row += 1
+        # theme
+        tk.Label(window, text="Thème:", bg="#f0f0f0", 
+                font=("Arial", 10)).grid(row=row, column=0, sticky=tk.W, padx=10, pady=5)
+        fields['theme'] = tk.Entry(window, width=40, font=("Arial", 10))
+        fields['theme'].insert(0, "default")
+        fields['theme'].grid(row=row, column=1, padx=10, pady=5)
+        
+        row += 1
+        # deadline
+        tk.Label(window, text="Deadline (jj-mm-aaaa):", bg="#f0f0f0", 
+                font=("Arial", 10)).grid(row=row, column=0, sticky=tk.W, padx=10, pady=5)
+        fields['deadline'] = tk.Entry(window, width=40, font=("Arial", 10))
+        fields['deadline'].grid(row=row, column=1, padx=10, pady=5)
+        
+        row += 1
+        # priority
+        tk.Label(window, text="Priority (1-5):", bg="#f0f0f0", 
+                font=("Arial", 10)).grid(row=row, column=0, sticky=tk.W, padx=10, pady=5)
+        fields['priority'] = tk.Spinbox(window, from_=1, to=5, width=38, font=("Arial", 10))
+        fields['priority'].grid(row=row, column=1, padx=10, pady=5)
+        
+        row += 1
+        # couleur
+        tk.Label(window, text="Couleur:", bg="#f0f0f0", 
+                font=("Arial", 10)).grid(row=row, column=0, sticky=tk.W, padx=10, pady=5)
+        fields['color'] = ttk.Combobox(window, width=37, font=("Arial", 10),
+                                       values=list(self.colors.keys()))
+        fields['color'].set("normal")
+        fields['color'].grid(row=row, column=1, padx=10, pady=5)
+        
+        row += 1
+        # status
+        fields['done'] = tk.BooleanVar()
+        tk.Checkbutton(window, text="Mark as done", variable=fields['done'],
+                      bg="#f0f0f0", font=("Arial", 10)).grid(row=row, column=0, 
+                                                             columnspan=2, pady=10)
+        
+        row += 1
+        # cancel/validation buttons
+        btn_frame = tk.Frame(window, bg="#f0f0f0")
+        btn_frame.grid(row=row, column=0, columnspan=2, pady=20)
+        
+        def save_task():
+            text = fields['text'].get().strip()
+            if not text:
+                messagebox.showerror("Error", "Task name is required !")
+                return
+            
+            # capitalize first letter
+            text = text[0].upper() + text[1:] if len(text) > 1 else text.upper()
+            
+            theme = fields['theme'].get().strip() or "default"
+            deadline_str = fields['deadline'].get().strip()
+            deadline = ""
+            
+            if deadline_str:
+                try:
+                    deadline_date = datetime.strptime(deadline_str, "%d-%m-%Y").date()
+                    if deadline_date < date.today():
+                        messagebox.showerror("Error", "Deadline cannot be in the past !")
+                        return
+                    deadline = deadline_str
+                except ValueError:
+                    messagebox.showerror("Error", "Invalid date format (dd-mm-yyyy)")
+                    return
+            
+            try:
+                priority = int(fields['priority'].get())
+                if priority < 1 or priority > 5:
+                    messagebox.showerror("Error", "Priority must be between 1 and 5!")
+                    return
+            except ValueError:
+                messagebox.showerror("Error", "Priority must be a valid number")
+                return
+            
+            color = fields['color'].get() or "normal"
+            done = fields['done'].get()
+            
+            self._add_task(text=text, theme=theme, deadline=deadline, 
+                          priority=priority, color=color, done=done)
+            
+            window.destroy()
+            self.refresh_display()
+            messagebox.showinfo("Success", "Task added successfully !")
+        
+        tk.Button(btn_frame, text="Add", command=save_task,
+                 bg="#27ae60", fg="white", font=("Arial", 10, "bold"),
+                 padx=20, pady=5).pack(side=tk.LEFT, padx=5)
+        
+        tk.Button(btn_frame, text="Cancel", command=window.destroy,
+                 bg="#e74c3c", fg="white", font=("Arial", 10, "bold"),
+                 padx=20, pady=5).pack(side=tk.LEFT, padx=5)
+    
+    def _add_task(self, text, theme, deadline, priority, color, done):
+        """adds a task to the list"""
+        # find a unique ID
+        id_count = 1
+        for task in self.tasks:
+            if task.get("id") == id_count:
+                id_count += 1
+        
+        new_task = {
+            "id": id_count,
+            "done": done,
+            "theme": theme,
+            "text": text,
+            "date": date.today().strftime("%d-%m-%Y"),
+            "deadline": deadline,
+            "priority": priority,
+            "color": color,
+        }
+        
+        # insert task at correct position in json
+        for idx, task in enumerate(self.tasks):
+            if new_task["id"] < task["id"]:
+                self.tasks.insert(idx, new_task)
+                break
+        else:
+            self.tasks.append(new_task)
+        
+        self._reindex()
+        self._save()
+    
+    def edit_task_window(self):
+        """window to edit a task"""
+        task_id = self._select_task_id("Modifier une tâche")
+        if task_id is None:
+            return
+        
+        task = self.tasks_by_id.get(task_id)
+        if not task:
+            messagebox.showerror("Erreur", "Tâche introuvable!")
+            return
+        
+        window = tk.Toplevel(self.master)
+        window.title(f"Edit task #{task_id}")
+        window.geometry("500x550")
+        window.configure(bg="#f0f0f0")
+        
+        fields = {}
+        
+        row = 0
+        # text
+        tk.Label(window, text="Task name:", bg="#f0f0f0", 
+                font=("Arial", 10, "bold")).grid(row=row, column=0, sticky=tk.W, padx=10, pady=5)
+        fields['text'] = tk.Entry(window, width=40, font=("Arial", 10))
+        fields['text'].insert(0, task.get("text", ""))
+        fields['text'].grid(row=row, column=1, padx=10, pady=5)
+        
+        row += 1
+        # theme
+        tk.Label(window, text="Thème:", bg="#f0f0f0", 
+                font=("Arial", 10)).grid(row=row, column=0, sticky=tk.W, padx=10, pady=5)
+        fields['theme'] = tk.Entry(window, width=40, font=("Arial", 10))
+        fields['theme'].insert(0, task.get("theme", ""))
+        fields['theme'].grid(row=row, column=1, padx=10, pady=5)
+        
+        row += 1
+        # deadline
+        tk.Label(window, text="Deadline (jj-mm-aaaa):", bg="#f0f0f0", 
+                font=("Arial", 10)).grid(row=row, column=0, sticky=tk.W, padx=10, pady=5)
+        fields['deadline'] = tk.Entry(window, width=40, font=("Arial", 10))
+        fields['deadline'].insert(0, task.get("deadline", ""))
+        fields['deadline'].grid(row=row, column=1, padx=10, pady=5)
+        
+        row += 1
+        # priorité
+        tk.Label(window, text="Priorité (1-5):", bg="#f0f0f0", 
+                font=("Arial", 10)).grid(row=row, column=0, sticky=tk.W, padx=10, pady=5)
+        fields['priority'] = tk.Spinbox(window, from_=1, to=5, width=38, font=("Arial", 10))
+        fields['priority'].delete(0, tk.END)
+        fields['priority'].insert(0, str(task.get("priority", 0)))
+        fields['priority'].grid(row=row, column=1, padx=10, pady=5)
+        
+        row += 1
+        # couleur
+        tk.Label(window, text="Couleur:", bg="#f0f0f0", 
+                font=("Arial", 10)).grid(row=row, column=0, sticky=tk.W, padx=10, pady=5)
+        fields['color'] = ttk.Combobox(window, width=37, font=("Arial", 10),
+                                       values=list(self.colors.keys()))
+        fields['color'].set(task.get("color", "normal"))
+        fields['color'].grid(row=row, column=1, padx=10, pady=5)
+        
+        row += 1
+        # statut
+        fields['done'] = tk.BooleanVar(value=task.get("done", False))
+        tk.Checkbutton(window, text="Mark as done", variable=fields['done'],
+                      bg="#f0f0f0", font=("Arial", 10)).grid(row=row, column=0, 
+                                                             columnspan=2, pady=10)
+        
+        row += 1
+        # validation/cancel buttons
+        btn_frame = tk.Frame(window, bg="#f0f0f0")
+        btn_frame.grid(row=row, column=0, columnspan=2, pady=20)
+        
+        def save_changes():
+            text = fields['text'].get().strip()
+            if text:
+                text = text[0].upper() + text[1:] if len(text) > 1 else text.upper()
+                task["text"] = text
+            
+            theme = fields['theme'].get().strip()
+            if theme:
+                task["theme"] = theme
+            
+            # deadline handling
+            deadline_str = fields['deadline'].get().strip()
+            original_deadline = task.get("deadline", "")
+            
+            # if deadline changed, verify it's not in the past
+            if deadline_str != original_deadline:
+                if deadline_str:
+                    try:
+                        deadline_date = datetime.strptime(deadline_str, "%d-%m-%Y").date()
+                        if deadline_date < date.today():
+                            messagebox.showerror("Error", "New deadline cannot be in the past")
+                            return
+                        task["deadline"] = deadline_str
+                    except ValueError:
+                        messagebox.showerror("Error", "Invalid date format (dd-mm-yyyy)")
+                        return
+                else:
+                    task["deadline"] = ""
+            # if deadline hasn't changed, keep it (even if it's in the past)
+            
+            try:
+                priority = int(fields['priority'].get())
+                if priority < 1 or priority > 5:
+                    messagebox.showerror("Error", "Priority must be between 1 and 5")
+                    return
+                task["priority"] = priority
+            except ValueError:
+                messagebox.showerror("Error", "Priority must be a valid number")
+                return
+            
+            color = fields['color'].get()
+            if color:
+                task["color"] = color
+            
+            task["done"] = fields['done'].get()
+            
+            self._reindex()
+            self._save()
+            window.destroy()
+            self.refresh_display()
+            messagebox.showinfo("Success", "Task updated successfully!")
+        
+        tk.Button(btn_frame, text="Save", command=save_changes,
+                 bg="#27ae60", fg="white", font=("Arial", 10, "bold"),
+                 padx=20, pady=5).pack(side=tk.LEFT, padx=5)
+        
+        tk.Button(btn_frame, text="Cancel", command=window.destroy,
+                 bg="#e74c3c", fg="white", font=("Arial", 10, "bold"),
+                 padx=20, pady=5).pack(side=tk.LEFT, padx=5)
+    
+    def toggle_task_status(self):
+        """toggles task status (done/not done)"""
+        task_id = self._select_task_id("Changer le statut d'une tâche")
+        if task_id is None:
+            return
+        
+        task = self.tasks_by_id.get(task_id)
+        if not task:
+            messagebox.showerror("Erreur", "Tâche introuvable!")
+            return
+        
+        task["done"] = not task.get("done", False)
+        self._reindex()
+        self._save()
+        self.refresh_display()
+        
+        status = "done" if task["done"] else "not done"
+        messagebox.showinfo("Success", f"Task marked as {status}")
+    
+    def delete_task_window(self):
+        """window to delete a task"""
+        task_id = self._select_task_id("Supprimer une tâche")
+        if task_id is None:
+            return
+        
+        task = self.tasks_by_id.get(task_id)
+        if not task:
+            messagebox.showerror("Erreur", "Tâche introuvable!")
+            return
+        
+        confirm = messagebox.askyesno("Confirmation", 
+                                      f"Are you sure you want to delete this task:\n\n'{task.get('text', '')}'?")
+        if confirm:
+            self.tasks = [t for t in self.tasks if t["id"] != task_id]
+            self._reindex()
+            self._save()
+            self.refresh_display()
+            messagebox.showinfo("Success", "Task deleted successfully!")
+    
+    def _select_task_id(self, title):
+        """displays a window to select a task"""
+        if not self.tasks:
+            messagebox.showinfo("Info", "No tasks available")
+            return None
+        
+        window = tk.Toplevel(self.master)
+        window.title(title)
+        window.geometry("600x400")
+        window.configure(bg="#f0f0f0")
+        
+        tk.Label(window, text="Select a task:", 
+                bg="#f0f0f0", font=("Arial", 12, "bold")).pack(pady=10)
+        
+        # task list
+        frame = tk.Frame(window, bg="white")
+        frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
+        
+        scrollbar = tk.Scrollbar(frame)
+        scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+        
+        listbox = tk.Listbox(frame, yscrollcommand=scrollbar.set, 
+                            font=("Arial", 10), height=15)
+        listbox.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        scrollbar.config(command=listbox.yview)
+        
+        for task in self.tasks:
+            status = "✅" if task.get("done", False) else "⏳"
+            listbox.insert(tk.END, f"ID {task['id']}: {status} {task.get('text', '')}")
+        
+        selected_id = [None]
+        
+        def on_select():
+            selection = listbox.curselection()
+            if selection:
+                selected_id[0] = self.tasks[selection[0]]["id"]
+                window.destroy()
+        
+        btn_frame = tk.Frame(window, bg="#f0f0f0")
+        btn_frame.pack(pady=10)
+        
+        tk.Button(btn_frame, text="Sélectionner", command=on_select,
+                 bg="#27ae60", fg="white", font=("Arial", 10, "bold"),
+                 padx=20, pady=5).pack(side=tk.LEFT, padx=5)
+        
+        tk.Button(btn_frame, text="Annuler", command=window.destroy,
+                 bg="#e74c3c", fg="white", font=("Arial", 10, "bold"),
+                 padx=20, pady=5).pack(side=tk.LEFT, padx=5)
+        
+        window.wait_window()
+        return selected_id[0]
+    
+    def _select_from_list(self, title, items):
+        """displays a window to select an item from a list"""
+        window = tk.Toplevel(self.master)
+        window.title(title)
+        window.geometry("400x300")
+        window.configure(bg="#f0f0f0")
+        
+        tk.Label(window, text=title, 
+                bg="#f0f0f0", font=("Arial", 12, "bold")).pack(pady=10)
+        
+        listbox = tk.Listbox(window, font=("Arial", 10), height=10)
+        listbox.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
+        
+        for item in items:
+            listbox.insert(tk.END, item)
+        
+        selected = [None]
+        
+        def on_select():
+            selection = listbox.curselection()
+            if selection:
+                selected[0] = items[selection[0]]
+                window.destroy()
+        
+        btn_frame = tk.Frame(window, bg="#f0f0f0")
+        btn_frame.pack(pady=10)
+        
+        tk.Button(btn_frame, text="Sélectionner", command=on_select,
+                 bg="#27ae60", fg="white", font=("Arial", 10, "bold"),
+                 padx=20, pady=5).pack(side=tk.LEFT, padx=5)
+        
+        tk.Button(btn_frame, text="Annuler", command=window.destroy,
+                 bg="#e74c3c", fg="white", font=("Arial", 10, "bold"),
+                 padx=20, pady=5).pack(side=tk.LEFT, padx=5)
+        
+        window.wait_window()
+        return selected[0]
+    
+    def _ask_priority(self, title):
+        """asks for a priority"""
+        window = tk.Toplevel(self.master)
+        window.title(title)
+        window.geometry("300x150")
+        window.configure(bg="#f0f0f0")
+        
+        tk.Label(window, text=title, 
+                bg="#f0f0f0", font=("Arial", 12, "bold")).pack(pady=10)
+        
+        spinbox = tk.Spinbox(window, from_=1, to=5, font=("Arial", 14), width=10)
+        spinbox.pack(pady=10)
+        
+        result: list[Optional[int]] = [None]
+        
+        def on_ok():
+            try:
+                result[0] = int(spinbox.get())
+                window.destroy()
+            except:
+                messagebox.showerror("Error", "Invalid value")
+        
+        btn_frame = tk.Frame(window, bg="#f0f0f0")
+        btn_frame.pack(pady=10)
+        
+        tk.Button(btn_frame, text="OK", command=on_ok,
+                 bg="#27ae60", fg="white", font=("Arial", 10, "bold"),
+                 padx=20, pady=5).pack(side=tk.LEFT, padx=5)
+        
+        tk.Button(btn_frame, text="Annuler", command=window.destroy,
+                 bg="#e74c3c", fg="white", font=("Arial", 10, "bold"),
+                 padx=20, pady=5).pack(side=tk.LEFT, padx=5)
+        
+        window.wait_window()
+        return result[0]
+
+
+def main():
+    root = tk.Tk()
+    app = TodoListGUI(root)
+    root.mainloop()
+
+
+if __name__ == "__main__":
+    main()
