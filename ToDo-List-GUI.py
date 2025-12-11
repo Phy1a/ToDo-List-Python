@@ -64,7 +64,7 @@ class TodoListGUI:
         title_frame.pack(fill=tk.X, side=tk.TOP)
         title_frame.pack_propagate(False)
         
-        title_label = tk.Label(title_frame, text="📋 Gestionnaire de tâches", 
+        title_label = tk.Label(title_frame, text="📋 Task Manager", 
                               font=("Arial", 20, "bold"), 
                               bg="#2c3e50", fg="white")
         title_label.pack(pady=15)
@@ -79,33 +79,33 @@ class TodoListGUI:
         left_frame.pack_propagate(False)
         
         # edition section
-        edit_label = tk.Label(left_frame, text="Édition", 
+        edit_label = tk.Label(left_frame, text="Edition", 
                              font=("Arial", 14, "bold"), 
                              bg="#f0f0f0")
         edit_label.pack(pady=(10, 5))
         
-        btn_add = tk.Button(left_frame, text="➕ Ajouter une tâche", 
+        btn_add = tk.Button(left_frame, text="➕ Add task", 
                            command=self.add_task_window,
                            bg="#27ae60", fg="white", 
                            font=("Arial", 10, "bold"),
                            relief=tk.FLAT, padx=10, pady=8)
         btn_add.pack(fill=tk.X, pady=5, padx=10)
         
-        btn_edit = tk.Button(left_frame, text="✏️ Modifier une tâche", 
+        btn_edit = tk.Button(left_frame, text="✏️ Edit task", 
                             command=self.edit_task_window,
                             bg="#3498db", fg="white", 
                             font=("Arial", 10, "bold"),
                             relief=tk.FLAT, padx=10, pady=8)
         btn_edit.pack(fill=tk.X, pady=5, padx=10)
         
-        btn_toggle = tk.Button(left_frame, text="✓ Changer le statut", 
+        btn_toggle = tk.Button(left_frame, text="✓ Toggle status", 
                               command=self.toggle_task_status,
                               bg="#9b59b6", fg="white", 
                               font=("Arial", 10, "bold"),
                               relief=tk.FLAT, padx=10, pady=8)
         btn_toggle.pack(fill=tk.X, pady=5, padx=10)
         
-        btn_delete = tk.Button(left_frame, text="🗑️ Supprimer une tâche", 
+        btn_delete = tk.Button(left_frame, text="🗑️ Delete task", 
                               command=self.delete_task_window,
                               bg="#e74c3c", fg="white", 
                               font=("Arial", 10, "bold"),
@@ -113,13 +113,13 @@ class TodoListGUI:
         btn_delete.pack(fill=tk.X, pady=5, padx=10)
         
         # display section
-        view_label = tk.Label(left_frame, text="Affichage", 
+        view_label = tk.Label(left_frame, text="Display", 
                              font=("Arial", 14, "bold"), 
                              bg="#f0f0f0")
         view_label.pack(pady=(20, 5))
         
         # filters
-        filter_frame = tk.LabelFrame(left_frame, text="Filtrer par", 
+        filter_frame = tk.LabelFrame(left_frame, text="Filter by", 
                                      bg="#f0f0f0", font=("Arial", 10, "bold"))
         filter_frame.pack(fill=tk.X, pady=5, padx=10)
         
@@ -127,12 +127,12 @@ class TodoListGUI:
         self.active_filter_params = {}  # store current filter parameters
         
         filters = [
-            ("Toutes", "all"),
-            ("Non terminées", "not_done"),
-            ("Terminées", "done"),
-            ("Par catégorie", "category"),
-            ("Par couleur", "color"),
-            ("Par priorité", "priority")
+            ("All", "all"),
+            ("Not Done", "not_done"),
+            ("Done", "done"),
+            ("By Category", "category"),
+            ("By Color", "color"),
+            ("By Priority", "priority")
         ]
         
         for text, value in filters:
@@ -143,18 +143,18 @@ class TodoListGUI:
             rb.pack(anchor=tk.W, padx=5, pady=2)
         
         # sort buttons
-        sort_frame = tk.LabelFrame(left_frame, text="Trier par", 
+        sort_frame = tk.LabelFrame(left_frame, text="Sort by", 
                                    bg="#f0f0f0", font=("Arial", 10, "bold"))
         sort_frame.pack(fill=tk.X, pady=5, padx=10)
         
         self.sort_var = tk.StringVar(value="none")
         sorts = [
-            ("Aucun tri", "none"),
-            ("Date d'ajout", "date_added"),
+            ("No Sort", "none"),
+            ("Date Added", "date_added"),
             ("Deadline", "deadline"),
-            ("Alphabétique", "alphabetically"),
-            ("Statut", "statut"),
-            ("Priorité", "priority")
+            ("Alphabetical", "alphabetically"),
+            ("Status", "statut"),
+            ("Priority", "priority")
         ]
         
         for text, value in sorts:
@@ -164,7 +164,7 @@ class TodoListGUI:
                                command=self.apply_filter_sort)
             rb.pack(anchor=tk.W, padx=5, pady=2)
         
-        btn_refresh = tk.Button(left_frame, text="Rafraîchir", 
+        btn_refresh = tk.Button(left_frame, text="Refresh", 
                                command=self.refresh_display,
                                bg="#34495e", fg="white", 
                                font=("Arial", 10, "bold"),
@@ -179,7 +179,7 @@ class TodoListGUI:
         search_frame = tk.Frame(right_frame, bg="white")
         search_frame.pack(fill=tk.X, padx=5, pady=5)
         
-        tk.Label(search_frame, text="🔍 Recherche:", 
+        tk.Label(search_frame, text="🔍 Search:", 
                 font=("Arial", 10), bg="white").pack(side=tk.LEFT, padx=5)
         
         self.search_var = tk.StringVar()
@@ -229,17 +229,17 @@ class TodoListGUI:
         if task_list_past or task_list_today:
             msg = ""
             if task_list_past:
-                msg += f"⚠️ {len(task_list_past)} tâche(s) en retard:\n"
+                msg += f"⚠️ {len(task_list_past)} overdue task(s):\n"
                 for t in task_list_past:
                     msg += f"  - {t['text']}\n"
                 msg += "\n"
             
             if task_list_today:
-                msg += f"{len(task_list_today)} tâche(s) pour aujourd'hui:\n"
+                msg += f"{len(task_list_today)} task(s) due today:\n"
                 for t in task_list_today:
                     msg += f"  - {t['text']}\n"
             
-            messagebox.showwarning("Rappel de deadlines", msg)
+            messagebox.showwarning("Deadline reminder", msg)
     
     def display_tasks(self, tasks):
         """displays tasks in text area"""
@@ -247,7 +247,7 @@ class TodoListGUI:
         self.task_display.delete(1.0, tk.END)
         
         if not tasks:
-            self.task_display.insert(tk.END, "Aucune tâche à afficher.\n", "title")
+            self.task_display.insert(tk.END, "No tasks to display.\n", "title")
         else:
             for task in tasks:
                 self._display_single_task(task)
@@ -271,15 +271,15 @@ class TodoListGUI:
             self.task_display.insert(tk.END, task_text, (color, "title"))
         
         # task status
-        status = "✅ Terminée" if done else "⏳ En cours"
-        self.task_display.insert(tk.END, f"Statut: {status}\n", color)
+        status = "✅ Done" if done else "⏳ In progress"
+        self.task_display.insert(tk.END, f"Status: {status}\n", color)
         
         # theme
         if task.get("theme", "") != "default":
-            self.task_display.insert(tk.END, f"📁 Thème: {task.get('theme', '')}\n", color)
+            self.task_display.insert(tk.END, f"📁 Theme: {task.get('theme', '')}\n", color)
         
         # creation date
-        self.task_display.insert(tk.END, f"📅 Créée le: {task.get('date', '')}\n", color)
+        self.task_display.insert(tk.END, f"📅 Created on: {task.get('date', '')}\n", color)
         
         # deadline
         if task.get("deadline", ""):
@@ -297,7 +297,7 @@ class TodoListGUI:
         # priority
         if task.get("priority", 0) != 0:
             priority = task.get("priority", 0)
-            self.task_display.insert(tk.END, f"Priorité: {priority}/5\n", color)
+            self.task_display.insert(tk.END, f"Priority: {priority}/5\n", color)
     
     def on_filter_change(self, filter_value):
         """handles filter change and opens selection windows if needed"""
@@ -351,11 +351,11 @@ class TodoListGUI:
         """opens a window to filter by category"""
         categories = list(set(t.get("theme", "") for t in self.tasks if t.get("theme")))
         if not categories:
-            messagebox.showinfo("Info", "Aucune catégorie disponible")
+            messagebox.showinfo("Info", "No categories available")
             self.filter_var.set("all")  # if cancelled, go back to "all" filter
             return
         
-        category = self._select_from_list("Choisir une catégorie", categories)
+        category = self._select_from_list("Choose a category", categories)
         if category:
             self.active_filter_params["category"] = category
             self.apply_filter_sort()
@@ -366,11 +366,11 @@ class TodoListGUI:
         """opens a window to filter by color"""
         colors = list(set(t.get("color", "") for t in self.tasks if t.get("color")))
         if not colors:
-            messagebox.showinfo("Info", "Aucune couleur disponible")
+            messagebox.showinfo("Info", "No colors available")
             self.filter_var.set("all")
             return
         
-        color = self._select_from_list("Choisir une couleur", colors)
+        color = self._select_from_list("Choose a color", colors)
         if color:
             self.active_filter_params["color"] = color
             self.apply_filter_sort()
@@ -379,7 +379,7 @@ class TodoListGUI:
     
     def filter_by_priority_window(self):
         """opens a window to filter by priority"""
-        priority = self._ask_priority("Choisir une priorité (0-5)")
+        priority = self._ask_priority("Choose a priority (0-5)")
         if priority is not None:
             self.active_filter_params["priority"] = priority
             self.apply_filter_sort()
@@ -426,7 +426,7 @@ class TodoListGUI:
     def add_task_window(self):
         """window to add a task"""
         window = tk.Toplevel(self.master)
-        window.title("Ajouter une tâche")
+        window.title("Add task")
         window.geometry("500x550")
         window.configure(bg="#f0f0f0")
         
@@ -435,7 +435,7 @@ class TodoListGUI:
         
         row = 0
         # task text (required)
-        tk.Label(window, text="* Nom de la tâche:", bg="#f0f0f0", 
+        tk.Label(window, text="* Task name:", bg="#f0f0f0", 
                 font=("Arial", 10, "bold")).grid(row=row, column=0, sticky=tk.W, padx=10, pady=5)
         fields['text'] = tk.Entry(window, width=40, font=("Arial", 10))
         fields['text'].grid(row=row, column=1, padx=10, pady=5)
@@ -456,8 +456,8 @@ class TodoListGUI:
         fields['deadline'].grid(row=row, column=1, padx=10, pady=5)
         
         row += 1
-        # priorité
-        tk.Label(window, text="Priorité (0-5):", bg="#f0f0f0", 
+        # priority
+        tk.Label(window, text="Priority (0-5):", bg="#f0f0f0", 
                 font=("Arial", 10)).grid(row=row, column=0, sticky=tk.W, padx=10, pady=5)
         fields['priority'] = tk.Spinbox(window, from_=0, to=5, width=38, font=("Arial", 10))
         fields['priority'].grid(row=row, column=1, padx=10, pady=5)
@@ -474,7 +474,7 @@ class TodoListGUI:
         row += 1
         # status
         fields['done'] = tk.BooleanVar()
-        tk.Checkbutton(window, text="Marquer comme terminée", variable=fields['done'],
+        tk.Checkbutton(window, text="Mark as done", variable=fields['done'],
                       bg="#f0f0f0", font=("Arial", 10)).grid(row=row, column=0, 
                                                              columnspan=2, pady=10)
         
@@ -486,7 +486,7 @@ class TodoListGUI:
         def save_task():
             text = fields['text'].get().strip()
             if not text:
-                messagebox.showerror("Erreur", "Le nom de la tâche est obligatoire!")
+                messagebox.showerror("Error", "Task name is required !")
                 return
             
             # capitalize first letter
@@ -500,11 +500,11 @@ class TodoListGUI:
                 try:
                     deadline_date = datetime.strptime(deadline_str, "%d-%m-%Y").date()
                     if deadline_date < date.today():
-                        messagebox.showerror("Erreur", "La deadline ne peut pas être dans le passé!")
+                        messagebox.showerror("Error", "Deadline cannot be in the past !")
                         return
                     deadline = deadline_str
                 except ValueError:
-                    messagebox.showerror("Erreur", "Format de date invalide (jj-mm-aaaa)!")
+                    messagebox.showerror("Error", "Invalid date format (dd-mm-yyyy)")
                     return
             
             try:
@@ -520,13 +520,13 @@ class TodoListGUI:
             
             window.destroy()
             self.refresh_display()
-            messagebox.showinfo("Succès", "Tâche ajoutée avec succès!")
+            messagebox.showinfo("Success", "Task added successfully !")
         
-        tk.Button(btn_frame, text="Ajouter", command=save_task,
+        tk.Button(btn_frame, text="Add", command=save_task,
                  bg="#27ae60", fg="white", font=("Arial", 10, "bold"),
                  padx=20, pady=5).pack(side=tk.LEFT, padx=5)
         
-        tk.Button(btn_frame, text="Annuler", command=window.destroy,
+        tk.Button(btn_frame, text="Cancel", command=window.destroy,
                  bg="#e74c3c", fg="white", font=("Arial", 10, "bold"),
                  padx=20, pady=5).pack(side=tk.LEFT, padx=5)
     
@@ -572,7 +572,7 @@ class TodoListGUI:
             return
         
         window = tk.Toplevel(self.master)
-        window.title(f"Modifier la tâche #{task_id}")
+        window.title(f"Edit task #{task_id}")
         window.geometry("500x550")
         window.configure(bg="#f0f0f0")
         
@@ -580,7 +580,7 @@ class TodoListGUI:
         
         row = 0
         # text
-        tk.Label(window, text="Nom de la tâche:", bg="#f0f0f0", 
+        tk.Label(window, text="Task name:", bg="#f0f0f0", 
                 font=("Arial", 10, "bold")).grid(row=row, column=0, sticky=tk.W, padx=10, pady=5)
         fields['text'] = tk.Entry(window, width=40, font=("Arial", 10))
         fields['text'].insert(0, task.get("text", ""))
@@ -623,7 +623,7 @@ class TodoListGUI:
         row += 1
         # statut
         fields['done'] = tk.BooleanVar(value=task.get("done", False))
-        tk.Checkbutton(window, text="Marquer comme terminée", variable=fields['done'],
+        tk.Checkbutton(window, text="Mark as done", variable=fields['done'],
                       bg="#f0f0f0", font=("Arial", 10)).grid(row=row, column=0, 
                                                              columnspan=2, pady=10)
         
@@ -652,11 +652,11 @@ class TodoListGUI:
                     try:
                         deadline_date = datetime.strptime(deadline_str, "%d-%m-%Y").date()
                         if deadline_date < date.today():
-                            messagebox.showerror("Erreur", "La nouvelle deadline ne peut pas être dans le passé")
+                            messagebox.showerror("Error", "New deadline cannot be in the past")
                             return
                         task["deadline"] = deadline_str
                     except ValueError:
-                        messagebox.showerror("Erreur", "Format de date invalide (jj-mm-aaaa)")
+                        messagebox.showerror("Error", "Invalid date format (dd-mm-yyyy)")
                         return
                 else:
                     task["deadline"] = ""
@@ -677,13 +677,13 @@ class TodoListGUI:
             self._save()
             window.destroy()
             self.refresh_display()
-            messagebox.showinfo("Succès", "Tâche modifiée avec succès!")
+            messagebox.showinfo("Success", "Task updated successfully!")
         
-        tk.Button(btn_frame, text="Enregistrer", command=save_changes,
+        tk.Button(btn_frame, text="Save", command=save_changes,
                  bg="#27ae60", fg="white", font=("Arial", 10, "bold"),
                  padx=20, pady=5).pack(side=tk.LEFT, padx=5)
         
-        tk.Button(btn_frame, text="Annuler", command=window.destroy,
+        tk.Button(btn_frame, text="Cancel", command=window.destroy,
                  bg="#e74c3c", fg="white", font=("Arial", 10, "bold"),
                  padx=20, pady=5).pack(side=tk.LEFT, padx=5)
     
@@ -703,8 +703,8 @@ class TodoListGUI:
         self._save()
         self.refresh_display()
         
-        status = "terminée" if task["done"] else "non terminée"
-        messagebox.showinfo("Succès", f"Tâche marquée comme {status}!")
+        status = "done" if task["done"] else "not done"
+        messagebox.showinfo("Success", f"Task marked as {status}")
     
     def delete_task_window(self):
         """window to delete a task"""
@@ -718,18 +718,18 @@ class TodoListGUI:
             return
         
         confirm = messagebox.askyesno("Confirmation", 
-                                      f"Êtes-vous sûr de vouloir supprimer la tâche:\n\n'{task.get('text', '')}'?")
+                                      f"Are you sure you want to delete this task:\n\n'{task.get('text', '')}'?")
         if confirm:
             self.tasks = [t for t in self.tasks if t["id"] != task_id]
             self._reindex()
             self._save()
             self.refresh_display()
-            messagebox.showinfo("Succès", "Tâche supprimée avec succès!")
+            messagebox.showinfo("Success", "Task deleted successfully!")
     
     def _select_task_id(self, title):
         """displays a window to select a task"""
         if not self.tasks:
-            messagebox.showinfo("Info", "Aucune tâche disponible")
+            messagebox.showinfo("Info", "No tasks available")
             return None
         
         window = tk.Toplevel(self.master)
@@ -737,7 +737,7 @@ class TodoListGUI:
         window.geometry("600x400")
         window.configure(bg="#f0f0f0")
         
-        tk.Label(window, text="Sélectionnez une tâche:", 
+        tk.Label(window, text="Select a task:", 
                 bg="#f0f0f0", font=("Arial", 12, "bold")).pack(pady=10)
         
         # task list
@@ -836,7 +836,7 @@ class TodoListGUI:
                 result[0] = int(spinbox.get())
                 window.destroy()
             except:
-                messagebox.showerror("Erreur", "Valeur invalide!")
+                messagebox.showerror("Error", "Invalid value")
         
         btn_frame = tk.Frame(window, bg="#f0f0f0")
         btn_frame.pack(pady=10)
