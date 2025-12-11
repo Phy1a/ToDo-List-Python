@@ -17,7 +17,7 @@ class TodoListGUI:
         self.tasks_by_id = {}
         self._load()
         
-        # configuration des couleurs
+        # color configuration
         self.colors = {
             "red": "#FF0000",
             "green": "#00FF00",
@@ -33,7 +33,7 @@ class TodoListGUI:
         self._check_deadlines()
         
     def _load(self):
-        """charge les tâches depuis le fichier JSON"""
+        """loads tasks from JSON file"""
         if not os.path.exists(self.file_path):
             self.tasks = []
             self._reindex()
@@ -48,18 +48,18 @@ class TodoListGUI:
             self.tasks_by_id = {}
     
     def _reindex(self):
-        """reconstruit l'index des tâches par ID"""
+        """rebuilds task index by ID"""
         self.tasks_by_id = {t["id"]: t for t in self.tasks}
     
     def _save(self):
-        """sauvegarde les tâches dans le fichier JSON"""
+        """saves tasks to JSON file"""
         data = {"tasks": self.tasks}
         with open(self.file_path, "w", encoding="utf-8") as f:
             json.dump(data, f, ensure_ascii=False, indent=4)
     
     def setup_ui(self):
-        """configure l'interface utilisateur principale"""
-        # titre
+        """configures the main user interface"""
+        # title
         title_frame = tk.Frame(self.master, bg="#2c3e50", height=60)
         title_frame.pack(fill=tk.X, side=tk.TOP)
         title_frame.pack_propagate(False)
@@ -69,16 +69,16 @@ class TodoListGUI:
                               bg="#2c3e50", fg="white")
         title_label.pack(pady=15)
         
-        # fenetre principale avec deux colonnes
+        # main window with two columns
         main_frame = tk.Frame(self.master, bg="#f0f0f0")
         main_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
         
-        # colonne gauche - controle
+        # left column - control panel
         left_frame = tk.Frame(main_frame, bg="#f0f0f0", width=250)
         left_frame.pack(side=tk.LEFT, fill=tk.Y, padx=(0, 10))
         left_frame.pack_propagate(False)
         
-        # section edition
+        # edition section
         edit_label = tk.Label(left_frame, text="Édition", 
                              font=("Arial", 14, "bold"), 
                              bg="#f0f0f0")
@@ -112,19 +112,19 @@ class TodoListGUI:
                               relief=tk.FLAT, padx=10, pady=8)
         btn_delete.pack(fill=tk.X, pady=5, padx=10)
         
-        # section affichage
+        # display section
         view_label = tk.Label(left_frame, text="Affichage", 
                              font=("Arial", 14, "bold"), 
                              bg="#f0f0f0")
         view_label.pack(pady=(20, 5))
         
-        # filtres
+        # filters
         filter_frame = tk.LabelFrame(left_frame, text="Filtrer par", 
                                      bg="#f0f0f0", font=("Arial", 10, "bold"))
         filter_frame.pack(fill=tk.X, pady=5, padx=10)
         
         self.filter_var = tk.StringVar(value="all")
-        self.active_filter_params = {}  # stocker les parametres de filtrage en cours
+        self.active_filter_params = {}  # store current filter parameters
         
         filters = [
             ("Toutes", "all"),
@@ -142,7 +142,7 @@ class TodoListGUI:
                                command=lambda v=value: self.on_filter_change(v))
             rb.pack(anchor=tk.W, padx=5, pady=2)
         
-        # boutons de tri
+        # sort buttons
         sort_frame = tk.LabelFrame(left_frame, text="Trier par", 
                                    bg="#f0f0f0", font=("Arial", 10, "bold"))
         sort_frame.pack(fill=tk.X, pady=5, padx=10)
@@ -171,11 +171,11 @@ class TodoListGUI:
                                relief=tk.FLAT, padx=10, pady=8)
         btn_refresh.pack(fill=tk.X, pady=10, padx=10)
         
-        # colonne droite - affichage des tâches
+        # right column - task display
         right_frame = tk.Frame(main_frame, bg="white")
         right_frame.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True)
         
-        # barre de recherche
+        # search bar
         search_frame = tk.Frame(right_frame, bg="white")
         search_frame.pack(fill=tk.X, padx=5, pady=5)
         
@@ -188,7 +188,7 @@ class TodoListGUI:
                                font=("Arial", 10), width=40)
         search_entry.pack(side=tk.LEFT, padx=5, fill=tk.X, expand=True)
         
-        # zone de texte scrollable pour afficher les tâches
+        # scrollable text area to display tasks
         self.task_display = scrolledtext.ScrolledText(right_frame, 
                                                        wrap=tk.WORD,
                                                        font=("Consolas", 10),
@@ -197,7 +197,7 @@ class TodoListGUI:
                                                        padx=10, pady=10)
         self.task_display.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
         
-        # configuration des tags de couleur pour le texte
+        # configure color tags for text
         for color_name, color_code in self.colors.items():
             self.task_display.tag_config(color_name, foreground=color_code)
         
@@ -205,11 +205,11 @@ class TodoListGUI:
         self.task_display.tag_config("urgent", background="#ffcccc")
         self.task_display.tag_config("done", foreground="#808080", overstrike=True)
         
-        # affichage initial
+        # initial display
         self.refresh_display()
     
     def _check_deadlines(self):
-        """vérifie les deadlines et affiche les alertes"""
+        """checks deadlines and displays alerts"""
         task_list_today = []
         task_list_past = []
         today = date.today()
@@ -242,7 +242,7 @@ class TodoListGUI:
             messagebox.showwarning("Rappel de deadlines", msg)
     
     def display_tasks(self, tasks):
-        """affiche les tâches dans la zone de texte"""
+        """displays tasks in text area"""
         self.task_display.config(state=tk.NORMAL)
         self.task_display.delete(1.0, tk.END)
         
@@ -256,11 +256,11 @@ class TodoListGUI:
         self.task_display.config(state=tk.DISABLED)
     
     def _display_single_task(self, task):
-        """affiche une seule tâche avec formatage"""
+        """displays a single task with formatting"""
         color = task.get("color", "normal")
         done = task.get("done", False)
         
-        # ID et texte
+        # ID and text
         id_text = f"📌 ID: {task.get('id', 'N/A')} | "
         self.task_display.insert(tk.END, id_text, color)
         
@@ -270,7 +270,7 @@ class TodoListGUI:
         else:
             self.task_display.insert(tk.END, task_text, (color, "title"))
         
-        # statut de la tache
+        # task status
         status = "✅ Terminée" if done else "⏳ En cours"
         self.task_display.insert(tk.END, f"Statut: {status}\n", color)
         
@@ -278,7 +278,7 @@ class TodoListGUI:
         if task.get("theme", "") != "default":
             self.task_display.insert(tk.END, f"📁 Thème: {task.get('theme', '')}\n", color)
         
-        # date de création
+        # creation date
         self.task_display.insert(tk.END, f"📅 Créée le: {task.get('date', '')}\n", color)
         
         # deadline
@@ -294,13 +294,13 @@ class TodoListGUI:
             except:
                 self.task_display.insert(tk.END, f"⏰ Deadline: {task.get('deadline')}\n", color)
         
-        # priorité
+        # priority
         if task.get("priority", 0) != 0:
             priority = task.get("priority", 0)
             self.task_display.insert(tk.END, f"Priorité: {priority}/5\n", color)
     
     def on_filter_change(self, filter_value):
-        """gère le changement de filtre et ouvre les fenêtres de sélection si nécessaire"""
+        """handles filter change and opens selection windows if needed"""
         if filter_value == "category":
             self.filter_by_category_window()
         elif filter_value == "color":
@@ -308,23 +308,23 @@ class TodoListGUI:
         elif filter_value == "priority":
             self.filter_by_priority_window()
         else:
-            # pour terminées/non terminées 
+            # for done/not done filters
             self.apply_filter_sort()
     
     def apply_filter_sort(self):
-        """applique les filtres + tris sélectionnés"""
+        """applies selected filters and sorts"""
         tasks = list(self.tasks)
         
-        # recherche textuelle
+        # text search
         search_text = self.search_var.get().lower()
         if search_text:
             tasks = [t for t in tasks if search_text in t.get("text", "").lower()]
         
-        # filtrage
+        # filtering
         filter_mode = self.filter_var.get()
         tasks = self._apply_filter(tasks, filter_mode)
         
-        # tri
+        # sorting
         sort_mode = self.sort_var.get()
         if sort_mode != "none":
             tasks = self._sort_tasks(tasks, sort_mode)
@@ -332,7 +332,7 @@ class TodoListGUI:
         self.display_tasks(tasks)
     
     def _apply_filter(self, tasks, mode):
-        """applique un filtre aux tâches"""
+        """applies a filter to tasks"""
         if mode == "all":
             return tasks
         elif mode == "done":
@@ -348,11 +348,11 @@ class TodoListGUI:
         return tasks
     
     def filter_by_category_window(self):
-        """ouvre une fenêtre pour filtrer par catégorie"""
+        """opens a window to filter by category"""
         categories = list(set(t.get("theme", "") for t in self.tasks if t.get("theme")))
         if not categories:
             messagebox.showinfo("Info", "Aucune catégorie disponible")
-            self.filter_var.set("all")  # si annulé, revenir au filtre "toutes"
+            self.filter_var.set("all")  # if cancelled, go back to "all" filter
             return
         
         category = self._select_from_list("Choisir une catégorie", categories)
@@ -363,7 +363,7 @@ class TodoListGUI:
             self.filter_var.set("all")  
     
     def filter_by_color_window(self):
-        """ouvre une fenêtre pour filtrer par couleur"""
+        """opens a window to filter by color"""
         colors = list(set(t.get("color", "") for t in self.tasks if t.get("color")))
         if not colors:
             messagebox.showinfo("Info", "Aucune couleur disponible")
@@ -378,7 +378,7 @@ class TodoListGUI:
             self.filter_var.set("all")
     
     def filter_by_priority_window(self):
-        """ouvre une fenêtre pour filtrer par priorité"""
+        """opens a window to filter by priority"""
         priority = self._ask_priority("Choisir une priorité (0-5)")
         if priority is not None:
             self.active_filter_params["priority"] = priority
@@ -387,7 +387,7 @@ class TodoListGUI:
             self.filter_var.set("all")
     
     def _sort_tasks(self, tasks, mode):
-        """trie les tâches selon le mode spécifié"""
+        """sorts tasks according to specified mode"""
         if mode == "date_added":
             return sorted(tasks, key=lambda t: self._parse_date(t.get("date", "")))
         elif mode == "deadline":
@@ -412,29 +412,29 @@ class TodoListGUI:
         return tasks
     
     def _parse_date(self, date_str):
-        """parse une date au format dd-mm-yyyy"""
+        """parses a date in dd-mm-yyyy format"""
         try:
             return datetime.strptime(date_str, "%d-%m-%Y")
         except:
             return datetime.max
     
     def refresh_display(self):
-        """rafraîchit l'affichage"""
+        """refreshes the display"""
         self._load()
         self.apply_filter_sort()
     
     def add_task_window(self):
-        """fenetre pour ajouter une tache"""
+        """window to add a task"""
         window = tk.Toplevel(self.master)
         window.title("Ajouter une tâche")
         window.geometry("500x550")
         window.configure(bg="#f0f0f0")
         
-        # champs du formulaire d'ajout de tache
+        # form fields for task addition
         fields = {}
         
         row = 0
-        # texte du todo (obligatoire)
+        # task text (required)
         tk.Label(window, text="* Nom de la tâche:", bg="#f0f0f0", 
                 font=("Arial", 10, "bold")).grid(row=row, column=0, sticky=tk.W, padx=10, pady=5)
         fields['text'] = tk.Entry(window, width=40, font=("Arial", 10))
@@ -472,14 +472,14 @@ class TodoListGUI:
         fields['color'].grid(row=row, column=1, padx=10, pady=5)
         
         row += 1
-        # statut
+        # status
         fields['done'] = tk.BooleanVar()
         tk.Checkbutton(window, text="Marquer comme terminée", variable=fields['done'],
                       bg="#f0f0f0", font=("Arial", 10)).grid(row=row, column=0, 
                                                              columnspan=2, pady=10)
         
         row += 1
-        # boutons d'annulation/validation
+        # cancel/validation buttons
         btn_frame = tk.Frame(window, bg="#f0f0f0")
         btn_frame.grid(row=row, column=0, columnspan=2, pady=20)
         
@@ -489,7 +489,7 @@ class TodoListGUI:
                 messagebox.showerror("Erreur", "Le nom de la tâche est obligatoire!")
                 return
             
-            # Capitaliser la première lettre
+            # capitalize first letter
             text = text[0].upper() + text[1:] if len(text) > 1 else text.upper()
             
             theme = fields['theme'].get().strip() or "default"
@@ -531,8 +531,8 @@ class TodoListGUI:
                  padx=20, pady=5).pack(side=tk.LEFT, padx=5)
     
     def _add_task(self, text, theme, deadline, priority, color, done):
-        """ajoute une tâche à la liste"""
-        # trouver un ID unique
+        """adds a task to the list"""
+        # find a unique ID
         id_count = 1
         for task in self.tasks:
             if task.get("id") == id_count:
@@ -549,7 +549,7 @@ class TodoListGUI:
             "color": color,
         }
         
-        # insérer la tache à la bonne position dans le json
+        # insert task at correct position in json
         for idx, task in enumerate(self.tasks):
             if new_task["id"] < task["id"]:
                 self.tasks.insert(idx, new_task)
@@ -561,7 +561,7 @@ class TodoListGUI:
         self._save()
     
     def edit_task_window(self):
-        """fenêtre pour modifier une tâche"""
+        """window to edit a task"""
         task_id = self._select_task_id("Modifier une tâche")
         if task_id is None:
             return
@@ -579,7 +579,7 @@ class TodoListGUI:
         fields = {}
         
         row = 0
-        # texte
+        # text
         tk.Label(window, text="Nom de la tâche:", bg="#f0f0f0", 
                 font=("Arial", 10, "bold")).grid(row=row, column=0, sticky=tk.W, padx=10, pady=5)
         fields['text'] = tk.Entry(window, width=40, font=("Arial", 10))
@@ -628,7 +628,7 @@ class TodoListGUI:
                                                              columnspan=2, pady=10)
         
         row += 1
-        # boutons validation/annulation
+        # validation/cancel buttons
         btn_frame = tk.Frame(window, bg="#f0f0f0")
         btn_frame.grid(row=row, column=0, columnspan=2, pady=20)
         
@@ -642,11 +642,11 @@ class TodoListGUI:
             if theme:
                 task["theme"] = theme
             
-            # gestion de la deadline
+            # deadline handling
             deadline_str = fields['deadline'].get().strip()
             original_deadline = task.get("deadline", "")
             
-            # si la deadline a changé, on vérifie qu'elle n'est pas dans le passé
+            # if deadline changed, verify it's not in the past
             if deadline_str != original_deadline:
                 if deadline_str:
                     try:
@@ -660,7 +660,7 @@ class TodoListGUI:
                         return
                 else:
                     task["deadline"] = ""
-            # si la deadline n'a pas changé, on la garde (meme si elle est dans le passé)
+            # if deadline hasn't changed, keep it (even if it's in the past)
             
             try:
                 task["priority"] = int(fields['priority'].get())
@@ -688,7 +688,7 @@ class TodoListGUI:
                  padx=20, pady=5).pack(side=tk.LEFT, padx=5)
     
     def toggle_task_status(self):
-        """change le statut d'une tâche (done/not done)"""
+        """toggles task status (done/not done)"""
         task_id = self._select_task_id("Changer le statut d'une tâche")
         if task_id is None:
             return
@@ -707,7 +707,7 @@ class TodoListGUI:
         messagebox.showinfo("Succès", f"Tâche marquée comme {status}!")
     
     def delete_task_window(self):
-        """fenêtre pour supprimer une tâche"""
+        """window to delete a task"""
         task_id = self._select_task_id("Supprimer une tâche")
         if task_id is None:
             return
@@ -727,7 +727,7 @@ class TodoListGUI:
             messagebox.showinfo("Succès", "Tâche supprimée avec succès!")
     
     def _select_task_id(self, title):
-        """affiche une fenêtre pour sélectionner une tâche"""
+        """displays a window to select a task"""
         if not self.tasks:
             messagebox.showinfo("Info", "Aucune tâche disponible")
             return None
@@ -740,7 +740,7 @@ class TodoListGUI:
         tk.Label(window, text="Sélectionnez une tâche:", 
                 bg="#f0f0f0", font=("Arial", 12, "bold")).pack(pady=10)
         
-        # liste des tâches
+        # task list
         frame = tk.Frame(window, bg="white")
         frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
         
@@ -779,7 +779,7 @@ class TodoListGUI:
         return selected_id[0]
     
     def _select_from_list(self, title, items):
-        """affiche une fenêtre pour sélectionner un élément dans une liste"""
+        """displays a window to select an item from a list"""
         window = tk.Toplevel(self.master)
         window.title(title)
         window.geometry("400x300")
@@ -817,7 +817,7 @@ class TodoListGUI:
         return selected[0]
     
     def _ask_priority(self, title):
-        """demande une priorité"""
+        """asks for a priority"""
         window = tk.Toplevel(self.master)
         window.title(title)
         window.geometry("300x150")
@@ -861,5 +861,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-
