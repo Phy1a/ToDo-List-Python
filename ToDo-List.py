@@ -90,7 +90,7 @@ class TodoList:
         self._save()
         # Printing
         print(Fore.GREEN + "\nTask successfully added to the JSON file as:")
-        printTask(new_task)
+        self.print_task(new_task)
 
     def _edit_task(self, done, task, text ="", theme = "",
                  deadline= "", priority="",
@@ -114,7 +114,7 @@ class TodoList:
 
         # Printing
         print(Fore.GREEN + "Task successfully edited to the JSON file as:\n")
-        printTask(task)
+        self.print_task(task)
 
     def list_tasks(self):
         return list(self.tasks)
@@ -145,8 +145,118 @@ class TodoList:
                         color_code = colors.get(color_name, "")
                         task_id_list.append(str(t.get("id", "")))
                         print(color_code + f'Id : {t.get("id","Error")}\nTask : {t.get("text","")}\nDone : {t.get("done","")}\n' + Style.RESET_ALL)
-                        return
+                        # return task_id_list
                 print(f"This task id does not figures in the ToDoList : {task_id}")
+        return task_id_list
+
+    def print_task(self, task):
+        """print a task with color formatting"""
+        color_name = task.get("color", "").lower()
+        color_code = colors.get(color_name, "")
+        print()
+        print(color_code + f'Id : {task.get("id","Error")}\nTask : {task.get("text","")}\nDone : {task.get("done", False)}'+ Style.RESET_ALL)
+        if (task.get("theme","") != "default"):
+            print(color_code + f'Theme : {task.get("theme","")}' + Style.RESET_ALL)
+        print(color_code + f'Task created on {task.get("date","")}'  + Style.RESET_ALL)
+        if (task.get("deadline","") != ""):
+            today = date.today()
+            date_obj = datetime.strptime(task.get("deadline"), "%d-%m-%Y").date()
+            if date_obj <= today and task.get("done") is False:
+                print("\033[41m" + color_code + f'For the : {task.get("deadline","")}' + "\033[0m" + Style.RESET_ALL)
+            else:
+                print(color_code + f'For the : {task.get("deadline","")}' + Style.RESET_ALL)
+        if (task.get("priority","") != 0):
+            print(color_code + f'Priority level/5 : {task.get("priority","")}' + Style.RESET_ALL)
+        print()
+
+    def sort_tasks(self, tasks, mode):
+        """
+        by date (addition/deadline) (most recent at the bottom/closest deadline at the bottom)
+        by status
+        by alphabetical order
+        priority
+        """
+        if not isinstance(tasks, list):
+            return []
+        if mode == "date_added":
+            def parse_date(t):
+                d = t.get("date", "")
+                try:
+                    return datetime.strptime(d, "%d-%m-%Y")
+                except Exception:
+                    return datetime.max
+            return sorted(tasks, key=parse_date)
+        elif mode == "priority":
+            def parse_priority(t):
+                p = t.get("priority", "")
+                return p
+            return sorted(tasks, key=parse_priority)
+        elif mode == "alphabetically":
+            def parse_tasks(t):
+                return t.get("text", "").lower()
+            return sorted(tasks, key=parse_tasks)
+        elif mode == "deadline":
+            def key_deadline(t):
+                s = (t.get("deadline", "") or "").strip()
+                if not s:
+                    return (0, datetime.min)
+                try:
+                    d = datetime.strptime(s, "%d-%m-%Y").date()
+                except Exception:
+                    return (0, datetime.min)
+                return (1, d)
+            return sorted(tasks, key=key_deadline)
+        elif mode == "statut":
+            done_tasks = []
+            not_done_tasks = []
+            for t in tasks:
+                if t.get("done", False):
+                    done_tasks.append(t)
+                else:
+                    not_done_tasks.append(t)
+            return done_tasks + not_done_tasks
+        return []
+
+    def filter_tasks(self, tasks, mode, category=None, color=None, priority=None):
+        """
+        filter by 
+            status
+            category
+            color
+            priority
+        """
+        if not isinstance(tasks, list):
+            return []
+        lst = []
+        match mode:
+            case "done":
+                for task in tasks:
+                    status = task.get("done", "")
+                    if status:
+                        lst.append(task)
+                return lst
+            case "not_done":
+                for task in tasks:
+                    status = task.get("done", "")
+                    if not status:
+                        lst.append(task)
+                return lst
+            case "category":
+                for task in tasks:
+                    if task.get("theme", "") == category:
+                        lst.append(task)
+                return lst
+            case "color":
+                for task in tasks:
+                    if task.get("color", "") == color:
+                        lst.append(task)
+                return lst
+            case "priority":
+                for task in tasks:
+                    if task.get("priority", "") == priority:
+                        lst.append(task)
+                return lst
+        return lst
 
     def _checkDeadlines(self):
         task_list_today = []
@@ -172,17 +282,6 @@ class TodoList:
                 self._printSumUpTask(task["id"])
                 print()
         
-
-def check_time(val, default=0):
-    pass
-
-    while True:
-        if 0 <= default <= 8:
-            try:
-                return int(val)
-            except (TypeError, ValueError):
-                print("This is not a valid priority")
-                continue
 
 def securedInputInt(message="Please enter un number : ", min: int =None, max: int =None, can_be_empty=True):
     ''' This function returns the user selected integer and assure its validity
@@ -265,122 +364,6 @@ def checkdate(message):
             print("Date non valide (jj-mm-yyyy)")
 
 
-def printTask(task):
-    color_name = task.get("color", "").lower()
-    color_code = colors.get(color_name, "")
-    print()
-    print(color_code + f'Id : {task.get("id","Error")}\nTask : {task.get("text","")}\nDone : {task.get("done", False)}'+ Style.RESET_ALL)
-    if (task.get("theme","") != "default"):
-        print(color_code + f'Theme : {task.get("theme","")}' + Style.RESET_ALL)
-    print(color_code + f'Task created on {task.get("date","")}'  + Style.RESET_ALL)
-    if (task.get("deadline","") != ""):
-        today = date.today()
-        date_obj = datetime.strptime(task.get("deadline"), "%d-%m-%Y").date()
-        if date_obj <= today and task.get("done") is False:
-            print("\033[41m" + color_code + f'For the : {task.get("deadline","")}' + "\033[0m" + Style.RESET_ALL)
-        else:
-            print(color_code + f'For the : {task.get("deadline","")}' + Style.RESET_ALL)
-    if (task.get("priority","") != 0):
-        print(color_code + f'Priority level/5 : {task.get("priority","")}' + Style.RESET_ALL)
-    print()
-
-
-def sortTask(task, mode):
-    """
-    by date (addition/deadline) (most recent at the bottom/closest deadline at the bottom)
-    by status
-    by alphabetical order
-    priority
-    """
-    if not isinstance(task, list):
-        return []
-    if mode == "date_added":
-        # Expects `task` to be a list of task dicts; returns sorted list
-        def parse_date(t):
-            d = t.get("date", "")
-            try:
-                return datetime.strptime(d, "%d-%m-%Y")
-            except Exception:
-                # Put invalid/missing dates at the end
-                return datetime.max
-        return sorted(task, key=parse_date)
-    elif mode == "priority":
-        def parse_priority(t):
-            p = t.get("priority", "")
-            return p
-        return sorted(task, key=parse_priority)
-    elif mode == "alphabetically":
-        # all tasks should start with uppercases for this to work
-        def parse_tasks(t):
-            t = t.get("text", "")
-            return t
-        return sorted(task, key=parse_tasks)
-    elif mode == "deadline":
-        def key_deadline(t):
-            s = (t.get("deadline", "") or "").strip()
-            if not s:
-                # no deadline are placed before tasks with deadlines :
-                return (0, datetime.min)
-            try:
-                d = datetime.strptime(s, "%d-%m-%Y").date()
-            except Exception:
-                # invalid deadline format are treated as tasks without deadline :
-                return (0, datetime.min)
-            # from soonest to farthest deadlines :
-            return (1, d)
-        return sorted(task, key=key_deadline)
-    elif mode == "statut":
-        done_tasks = []
-        not_done_tasks = []
-        for t in task:
-            if t.get("done", False):
-                done_tasks.append(t)
-            else:
-                not_done_tasks.append(t)
-        return done_tasks + not_done_tasks
-    return []
-
-def filterTasks(tasks, mode, category=None, color=None, priority=None):
-    """
-    filter by 
-        status
-        category
-        color
-        priority
-    """
-    if not isinstance(tasks, list):
-        return []
-    lst = []
-    match mode:
-        case "done":
-            for task in tasks:
-                status = task.get("done", "")
-                if status:
-                    lst.append(task)
-            return lst
-        case "not_done":
-            for task in tasks:
-                status = task.get("done", "")
-                if not status:
-                    lst.append(task)
-            return lst
-        case "category":
-            for task in tasks:
-                if task.get("theme", "") == category:
-                    lst.append(task)
-            return lst
-        case "color":
-            for task in tasks:
-                if task.get("color", "") == color:
-                    lst.append(task)
-            return lst
-        case "priority":
-            for task in tasks:
-                if task.get("priority", "") == priority:
-                    lst.append(task)
-            return lst
-
-
 def main():
     todo = TodoList("ToDoList.json")
     todo._checkDeadlines()
@@ -428,7 +411,7 @@ def main():
                         # print("task added to the json")
                     case 'e': # full edit case
                         task_id_list = todo._printSumUpTask()
-                        if (task_id_list == None and todo.tasks != []):
+                        if (task_id_list and todo.tasks != []):
                             while True:
                                 selected_id = securedInputString("Please enter the id of the task you want to edit : ",task_id_list, True)
                                 try:
@@ -444,7 +427,7 @@ def main():
                             if selected_id != "":
                                 for t in todo.tasks:
                                     if (int(t.get("id", "")) == selected_id):
-                                        printTask(t)
+                                        todo.print_task(t)
                                         print("\nTo not modify the champ, just press enter\n")
                                         text = securedInputString("Task name : ", can_be_empty=True)      # input("Texte de la tache : ").strip()
                                         if(text != ""):
@@ -477,7 +460,7 @@ def main():
                             print("Edition aborted")
                     case 'm': # toggle status
                         task_id_list = todo._printSumUpTask()
-                        if (task_id_list == None and todo.tasks != []):
+                        if (task_id_list and todo.tasks != []):
                             while True:
                                 selected_id = securedInputString("Please enter the id of the task you want to edit : ",task_id_list, True)
                                 try:
@@ -528,21 +511,21 @@ def main():
                 if sort != "" and sort.lower() !="l":
                     match sort.lower():
                         case "t":
-                            tasks = sortTask(tasks, "date_added")
+                            tasks = todo.sort_tasks(tasks, "date_added")
                         case "dl":
-                            tasks = sortTask(tasks, "deadline")
+                            tasks = todo.sort_tasks(tasks, "deadline")
                         case "a":
-                            tasks = sortTask(tasks, "alphabetically")
+                            tasks = todo.sort_tasks(tasks, "alphabetically")
                         case "d":
-                            tasks = sortTask(tasks, "statut")
+                            tasks = todo.sort_tasks(tasks, "statut")
                         case "p":
-                            tasks = sortTask(tasks, "priority")
+                            tasks = todo.sort_tasks(tasks, "priority")
                 if filter != "" and filter.lower() !="l":
                     match filter.lower():
                         case "d":
-                            tasks = filterTasks(tasks, "done")
+                            tasks = todo.filter_tasks(tasks, "done")
                         case "u":
-                            tasks = filterTasks(tasks, "not_done")
+                            tasks = todo.filter_tasks(tasks, "not_done")
                         case "c":
                             # parsing the json to get all existing category
                             category_lst =[]
@@ -560,7 +543,7 @@ def main():
                                 print("Not an existing category. Try again :")
                                 category_wanted = input("")
                             # filter the tasks
-                            tasks = filterTasks(tasks, "category", category=category_wanted)
+                            tasks = todo.filter_tasks(tasks, "category", category=category_wanted)
                         case "v":
                             # parsing the json to get all existing colors
                             color_lst =[]
@@ -578,23 +561,23 @@ def main():
                                 print("Not an existing color. Try again :")
                                 color_wanted = input("")
                             # filter the tasks
-                            tasks = filterTasks(tasks, "color", color=color_wanted)
+                            tasks = todo.filter_tasks(tasks, "color", color=color_wanted)
                         case "p":
                             while True:
                                 priority_wanted = int(input("Select a priority level (0<=priority<=5) :\n"))
                                 if priority_wanted < 0 or priority_wanted > 5:
                                     continue
                                 break
-                            tasks = filterTasks(tasks, "priority", priority=priority_wanted)
+                            tasks = todo.filter_tasks(tasks, "priority", priority=priority_wanted)
                 #print("id | done | theme | text | date | deadline | priority | color")
                 if not tasks or tasks == []:
                     print("No task")
                 else:
                     for t in tasks:
-                        printTask(t)           
+                        todo.print_task(t)           
             case 's': # mode == s
                 task_id_list = todo._printSumUpTask()
-                if (task_id_list == None and todo.tasks != []):
+                if (task_id_list and todo.tasks != []):
                     while True:
                         selected_id = securedInputString("Please enter the id of the task you want to edit : ",task_id_list, True)
                         try:
